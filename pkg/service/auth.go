@@ -9,12 +9,7 @@ import (
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/SanyaWarvar/temple_api/pkg/repository"
 	"github.com/dgrijalva/jwt-go"
-)
-
-const (
-	salt       = "pashatexnik"
-	tokenTTL   = time.Hour * 24
-	signingKey = "radiance"
+	"github.com/google/uuid"
 )
 
 type tokenClaims struct {
@@ -22,16 +17,33 @@ type tokenClaims struct {
 	UserId string `json:"user_id"`
 }
 
-type AuthService struct {
-	repo repository.Authorization
+type authSettings struct {
+	TokenTTL   time.Duration
+	Salt       string
+	SigningKey string
 }
 
-func NewAuthService(repo repository.Authorization) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthSettings(tokenTTL time.Duration, salt, signingKey string) *authSettings {
+	return &authSettings{
+		TokenTTL:   tokenTTL,
+		Salt:       salt,
+		SigningKey: signingKey,
+	}
+}
+
+type AuthService struct {
+	repo     repository.Authorizer
+	cache    repository.Cacher
+	settings authSettings
+}
+
+func NewAuthService(repo repository.Authorizer, cache repository.Cacher, settings authSettings) *AuthService {
+	return &AuthService{repo: repo, cache: cache, settings: settings}
 }
 
 func (s *AuthService) CreateUser(user models.User) error {
 	user.Password = s.generatePasswordHash(user.Password)
+	user.Id = uuid.NewString()
 	return s.repo.CreateUser(user)
 }
 
@@ -43,7 +55,7 @@ func (s *AuthService) GetUser(user models.User) (models.User, error) {
 func (s *AuthService) generatePasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	return fmt.Sprintf("%x", hash.Sum([]byte(s.settings.Salt)))
 }
 
 func (s *AuthService) GenerateToken(username, password string) (string, error) {
@@ -56,14 +68,14 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		jwt.SigningMethodHS256,
 		&tokenClaims{
 			jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(tokenTTL).Unix(),
+				ExpiresAt: time.Now().Add(s.settings.TokenTTL).Unix(),
 				IssuedAt:  time.Now().Unix(),
 			},
 			user.Id,
 		},
 	)
 
-	return token.SignedString([]byte(signingKey))
+	return token.SignedString([]byte(s.settings.SigningKey))
 }
 
 func (s *AuthService) ParseToken(accessToken string) (string, error) {
@@ -72,7 +84,7 @@ func (s *AuthService) ParseToken(accessToken string) (string, error) {
 			return nil, errors.New("invalid signing method")
 		}
 
-		return []byte(signingKey), nil
+		return []byte(s.settings.SigningKey), nil
 	})
 	if err != nil {
 		return "", err
@@ -84,4 +96,26 @@ func (s *AuthService) ParseToken(accessToken string) (string, error) {
 	}
 
 	return claims.UserId, nil
+}
+
+func (s *AuthService) CheckEmailConfirm(email string) (bool, error) {
+
+	return s.repo.CheckEmailConfirm(email)
+
+}
+
+func (s *AuthService) ConfirmEmail(email, code string) error {
+	trueCode, _, err := s.cache.GetConfirmCode(email)
+	if err != nil {
+		return err
+	}
+	if trueCode != code {
+		return errors.New("bad code")
+	}
+	return s.repo.ConfirmEmail(email)
+}
+
+func (s *AuthService) GetConfirmCode(email string) (string, time.Duration, error) {
+
+	return s.cache.GetConfirmCode(email)
 }
