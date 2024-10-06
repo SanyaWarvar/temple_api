@@ -33,7 +33,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		if strings.Contains(err.Error(), "username") {
 			errorMessage = "This username already exist"
 		}
-		newErrorResponse(c, http.StatusBadRequest, errorMessage)
+		newErrorResponse(c, http.StatusConflict, errorMessage)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 	}
 
 	if status {
-		newErrorResponse(c, http.StatusBadRequest, "This email already confirmed")
+		newErrorResponse(c, http.StatusConflict, "This email already confirmed")
 		return
 	}
 	minTtl, _ := time.ParseDuration(os.Getenv("MIN_TTL"))
@@ -65,7 +65,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 
 	_, ttl, err := h.services.ICacheService.GetConfirmCode(input.Email)
 	if err == nil && minTtl < ttl {
-		newErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("Сode has already been sent %s ago", maxTtl-ttl))
+		newErrorResponse(c, http.StatusConflict, fmt.Sprintf("Сode has already been sent %s ago", maxTtl-ttl))
 		return
 	}
 
@@ -97,13 +97,13 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 	}
 
 	if status {
-		newErrorResponse(c, http.StatusBadRequest, "This email already confirmed")
+		newErrorResponse(c, http.StatusConflict, "This email already confirmed")
 		return
 	}
 
 	err = h.services.IEmailSmtpService.ConfirmEmail(input.Email, input.Code)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -127,7 +127,7 @@ func (h *Handler) signIn(c *gin.Context) {
 	}
 
 	if !status {
-		newErrorResponse(c, http.StatusBadRequest, "This email not confirmed")
+		newErrorResponse(c, http.StatusForbidden, "This email not confirmed")
 		return
 	}
 
