@@ -2,13 +2,15 @@ package models
 
 import (
 	"regexp"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	Id       string
+	Id       uuid.UUID
 	Username string `json:"username" binding:"required" db:"username"`
-	Email    string `json:"email" binding:"required" db:"username"`
-	Password string `json:"password" binding:"required" db:"username"`
+	Email    string `json:"email" binding:"required" db:"email"`
+	Password string `json:"password" binding:"required" db:"password_hash"`
 }
 
 const (

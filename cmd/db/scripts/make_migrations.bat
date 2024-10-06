@@ -1,0 +1,1 @@
+migrate -path ./cmd/db/schema -database "postgresql://postgres:qwerty@localhost:5432/postgres?sslmode=disable" up

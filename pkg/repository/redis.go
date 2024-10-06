@@ -19,7 +19,7 @@ func NewRedisDb(opt *redis.Options) (*redis.Client, error) {
 	return client, err
 }
 
-func NewCache(db *redis.Client, codeExp time.Duration) *Cache {
+func NewCacheRedis(db *redis.Client, codeExp time.Duration) *Cache {
 	return &Cache{
 		db:      db,
 		codeExp: codeExp,

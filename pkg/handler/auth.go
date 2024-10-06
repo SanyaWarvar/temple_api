@@ -24,7 +24,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Authorizer.CreateUser(input)
+	err := h.services.IUserService.CreateUser(input)
 	if err != nil {
 		errorMessage := ""
 		if strings.Contains(err.Error(), "email") {
@@ -50,7 +50,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 		return
 	}
 
-	status, err := h.services.Authorizer.CheckEmailConfirm(input.Email)
+	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -63,14 +63,13 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 	minTtl, _ := time.ParseDuration(os.Getenv("MIN_TTL"))
 	maxTtl, _ := time.ParseDuration(os.Getenv("CODE_EXP"))
 
-	_, ttl, err := h.services.Authorizer.GetConfirmCode(input.Email)
-
-	if err == nil && ttl > minTtl {
-		newErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("Сode has already been sent %s ago", ttl))
+	_, ttl, err := h.services.ICacheService.GetConfirmCode(input.Email)
+	if err == nil && minTtl < ttl {
+		newErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("Сode has already been sent %s ago", maxTtl-ttl))
 		return
 	}
 
-	go h.services.EmailSmtper.SendConfirmEmailMessage(input)
+	go h.services.IEmailSmtpService.SendConfirmEmailMessage(input)
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"exp_time":       maxTtl.String(),
@@ -91,7 +90,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		return
 	}
 
-	status, err := h.services.Authorizer.CheckEmailConfirm(input.Email)
+	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -102,7 +101,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		return
 	}
 
-	err = h.services.Authorizer.ConfirmEmail(input.Email, input.Code)
+	err = h.services.IEmailSmtpService.ConfirmEmail(input.Email, input.Code)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -110,5 +109,89 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"details": "ok",
+	})
+}
+
+func (h *Handler) signIn(c *gin.Context) {
+	var input models.User
+
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if !status {
+		newErrorResponse(c, http.StatusBadRequest, "This email not confirmed")
+		return
+	}
+
+	input, err = h.services.IUserService.GetUserByUP(input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	token, refresh, _, err := h.services.IJwtManagerService.GeneratePairToken(input.Id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{
+		"access_token":  token,
+		"refresh_token": refresh,
+	})
+}
+
+type RefreshTokenInput struct {
+	AccessToken  string `json:"access_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (h *Handler) refreshToken(c *gin.Context) {
+	var input RefreshTokenInput
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accessToken, err := h.services.IJwtManagerService.ParseToken(input.AccessToken)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	expStatus := h.services.IJwtManagerService.CheckRefreshTokenExp(accessToken.RefreshId)
+	if !expStatus {
+		newErrorResponse(c, http.StatusBadRequest, "refresh token is expired or not found")
+		return
+	}
+
+	compareStatus := h.services.IJwtManagerService.CompareTokens(accessToken.RefreshId, input.RefreshToken)
+	if !compareStatus {
+		newErrorResponse(c, http.StatusBadRequest, "invalid refresh token")
+		return
+	}
+
+	err = h.services.IJwtManagerService.DeleteRefreshTokenById(accessToken.RefreshId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "refresh token is expired")
+		return
+	}
+
+	token, refresh, _, err := h.services.IJwtManagerService.GeneratePairToken(accessToken.UserId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{
+		"access_token":  token,
+		"refresh_token": refresh,
 	})
 }

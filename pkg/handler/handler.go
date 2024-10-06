@@ -18,9 +18,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	auth := router.Group("/auth")
 	{
 		auth.POST("/sign_up", h.signUp)
+		auth.POST("/sign_in", h.signIn)
 		auth.POST("/send_code", h.sendConfirmCode)
 		auth.POST("/confirm_email", h.confirmEmail)
-		
+		auth.POST("/refresh_token", h.refreshToken)
 	}
 
 	//api := router.Group("/api", h.userIdentity)

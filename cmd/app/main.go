@@ -10,6 +10,7 @@ import (
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/SanyaWarvar/temple_api/pkg/repository"
 	"github.com/SanyaWarvar/temple_api/pkg/service"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -53,21 +54,25 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Error while create connection to cache: %s", err.Error())
 	}
-
-	repos := repository.NewRepository(db, cacheDb, codeExp)
-	tokenTTL, err := time.ParseDuration(os.Getenv("TOKENTTL"))
-	if err != nil {
-		logrus.Fatalf("Errof while parse tokenttl: %s", err.Error())
-	}
-	authSettings := service.NewAuthSettings(tokenTTL, os.Getenv("SALT"), os.Getenv("SIGNINGKEY"))
-
 	codeLenght, err := strconv.Atoi(os.Getenv("CODE_LENGHT"))
 	if err != nil {
-		logrus.Fatalf("Error while create connection to db: %s", err.Error())
+		logrus.Fatalf("Error while create connection to cache: %s", err.Error())
 	}
+	emailCfg := repository.NewEmailCfg(os.Getenv("OWNER_EMAIL"), os.Getenv("OWNER_PASSWORD"), os.Getenv("SMTP_ADDR"), codeLenght)
 
-	smtpSettings := service.NewEmailSettings(os.Getenv("OWNER_EMAIL"), os.Getenv("OWNER_PASSWORD"), os.Getenv("SMTP_ADDR"), codeLenght)
-	services := service.NewService(repos, *authSettings, *smtpSettings)
+	accessTokenTTL, err := time.ParseDuration(os.Getenv("ACCESSTOKENTTL"))
+	if err != nil {
+		logrus.Fatalf("Errof while parse accessTokenTTL: %s", err.Error())
+	}
+	refreshTokenTTL, err := time.ParseDuration(os.Getenv("REFRESHTOKENTTL"))
+	if err != nil {
+		logrus.Fatalf("Errof while parse refreshTokenTTL: %s", err.Error())
+	}
+	jwtCfg := repository.NewJwtManagerCfg(accessTokenTTL, refreshTokenTTL, os.Getenv("SIGNINGKEY"), jwt.SigningMethodHS256)
+
+	repos := repository.NewRepository(db, cacheDb, codeExp, emailCfg, jwtCfg)
+
+	services := service.NewService(repos)
 
 	handlers := handler.NewHandler(services)
 	srv := new(models.Server)
