@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/SanyaWarvar/temple_api/pkg/service"
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +17,8 @@ func NewHandler(services *service.Service) *Handler {
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
+	router.HEAD("/health", h.check_health)
+
 	auth := router.Group("/auth")
 	{
 		auth.POST("/sign_up", h.signUp)
@@ -27,4 +31,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	//api := router.Group("/api", h.userIdentity)
 
 	return router
+}
+
+func (h *Handler) check_health(c *gin.Context) {
+	c.JSON(http.StatusOK, map[string]string{"details": "ok"})
 }

@@ -50,6 +50,12 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 		return
 	}
 
+	target, err := h.services.IUserService.GetUserByUP(input)
+	if err != nil || target.Email != input.Email {
+		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -92,7 +98,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 
 	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "email not found")
 		return
 	}
 
@@ -122,7 +128,7 @@ func (h *Handler) signIn(c *gin.Context) {
 
 	status, err := h.services.IEmailSmtpService.CheckEmailConfirm(input.Email)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "email not found")
 		return
 	}
 
@@ -131,13 +137,18 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	input, err = h.services.IUserService.GetUserByUP(input)
+	target, err := h.services.IUserService.GetUserByUP(input)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	token, refresh, _, err := h.services.IJwtManagerService.GeneratePairToken(input.Id)
+	if input.Email != target.Email {
+		newErrorResponse(c, http.StatusUnauthorized, "this user have another email")
+		return
+	}
+
+	token, refresh, _, err := h.services.IJwtManagerService.GeneratePairToken(target.Id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -163,12 +174,12 @@ func (h *Handler) refreshToken(c *gin.Context) {
 
 	accessToken, err := h.services.IJwtManagerService.ParseToken(input.AccessToken)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "bad access token")
 		return
 	}
 	expStatus := h.services.IJwtManagerService.CheckRefreshTokenExp(accessToken.RefreshId)
 	if !expStatus {
-		newErrorResponse(c, http.StatusBadRequest, "refresh token is expired or not found")
+		newErrorResponse(c, http.StatusUnauthorized, "refresh token is expired or not found")
 		return
 	}
 
@@ -180,7 +191,7 @@ func (h *Handler) refreshToken(c *gin.Context) {
 
 	err = h.services.IJwtManagerService.DeleteRefreshTokenById(accessToken.RefreshId)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "refresh token is expired")
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
