@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO change 200 -> 201
+
 func (h *Handler) signUp(c *gin.Context) {
 	var input models.User
 
@@ -118,8 +120,13 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 	})
 }
 
+type SignInStruct struct {
+	Email    string `json:"email" binding:"required" db:"email"`
+	Password string `json:"password" binding:"required" db:"password_hash"`
+}
+
 func (h *Handler) signIn(c *gin.Context) {
-	var input models.User
+	var input SignInStruct
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -137,7 +144,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	target, err := h.services.IUserService.GetUserByUP(input)
+	target, err := h.services.IUserService.GetUserByEP(input.Email, input.Password)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

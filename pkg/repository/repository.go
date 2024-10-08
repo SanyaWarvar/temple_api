@@ -12,10 +12,14 @@ import (
 type IUserRepo interface {
 	CreateUser(user models.User) error
 	GetUserByUP(username, hashedPassword string) (models.User, error)
+	GetUserByEP(email, hashedPassword string) (models.User, error)
 	GetUserById(userId uuid.UUID) (models.User, error)
 	GetUserByU(username string) (models.User, error)
+	GetUserByE(email string) (models.User, error)
 	HashPassword(password string) (string, error)
 	ComparePassword(password, hashedPassword string) bool
+	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
+	UpdateUserInfo(userInfo models.UserInfo) error
 }
 
 type IEmailSmtpRepo interface {
