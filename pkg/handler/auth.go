@@ -39,7 +39,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusCreated, map[string]interface{}{
 		"details": "ok",
 	})
 }
@@ -79,7 +79,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 
 	go h.services.IEmailSmtpService.SendConfirmEmailMessage(input)
 
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusCreated, map[string]interface{}{
 		"exp_time":       maxTtl.String(),
 		"next_code_time": (maxTtl - minTtl).String(),
 	})
@@ -115,9 +115,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"details": "ok",
-	})
+	c.JSON(http.StatusNoContent, nil)
 }
 
 type SignInStruct struct {
@@ -161,7 +159,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusCreated, map[string]string{
 		"access_token":  token,
 		"refresh_token": refresh,
 	})
@@ -208,7 +206,7 @@ func (h *Handler) refreshToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusCreated, map[string]string{
 		"access_token":  token,
 		"refresh_token": refresh,
 	})

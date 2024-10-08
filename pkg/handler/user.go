@@ -39,12 +39,10 @@ func (h *Handler) updateUserInfo(c *gin.Context) {
 	input.UserId = userId
 
 	err = h.services.IUserService.UpdateUserInfo(input)
-	if err != nil{
+	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(200, map[string]string{
-		"details": "success",
-	})
+	c.JSON(http.StatusNoContent, nil)
 }
