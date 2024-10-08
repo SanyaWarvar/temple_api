@@ -44,6 +44,11 @@ func (h *Handler) signUp(c *gin.Context) {
 	})
 }
 
+type SendConfirmCodeInput struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 func (h *Handler) sendConfirmCode(c *gin.Context) {
 	var input models.User
 
@@ -52,9 +57,9 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 		return
 	}
 
-	target, err := h.services.IUserService.GetUserByUP(input)
+	target, err := h.services.IUserService.GetUserByEP(input.Email, input.Password)
 	if err != nil || target.Email != input.Email {
-		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		newErrorResponse(c, http.StatusUnauthorized, "Bad password")
 		return
 	}
 
