@@ -41,6 +41,26 @@ func (s *UserService) GetUserByUP(user models.User) (models.User, error) {
 	return user, errors.New("incorrect password")
 }
 
+func (s *UserService) GetUserByEP(email, password string) (models.User, error) {
+	var user models.User
+	targetUser, err := s.repo.GetUserByE(email)
+	if err != nil {
+		return user, err
+	}
+
+	if s.repo.ComparePassword(password, targetUser.Password) {
+		return targetUser, err
+	}
+	return user, errors.New("incorrect password")
+}
+
 func (s *UserService) HashPassword(password string) (string, error) {
 	return s.repo.HashPassword(password)
+}
+
+func (s *UserService) GetUserInfoById(userId uuid.UUID) (models.UserInfo, error) {
+	return s.repo.GetUserInfoById(userId)
+}
+func (s *UserService) UpdateUserInfo(userInfo models.UserInfo) error {
+	return s.repo.UpdateUserInfo(userInfo)
 }

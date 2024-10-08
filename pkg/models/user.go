@@ -2,6 +2,7 @@ package models
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -41,4 +42,15 @@ func (u *User) IsValid() bool {
 	}
 	return false
 
+}
+
+type UserInfo struct {
+	UserId     uuid.UUID  `json:"-" db:"user_id"`
+	FirstName  *string    `json:"first_name" db:"first_name"`
+	SecondName *string    `json:"second_name" db:"second_name"`
+	Status     *string    `json:"status" db:"status"`
+	Birthday   *time.Time `json:"birthday" db:"birthday"`
+	Gender     *string    `json:"gender" db:"gender"`
+	Country    *string    `json:"country" db:"country"`
+	City       *string    `json:"city" db:"city"`
 }

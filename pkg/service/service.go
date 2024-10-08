@@ -11,10 +11,14 @@ import (
 type IUserService interface {
 	CreateUser(user models.User) error
 	GetUserByUP(user models.User) (models.User, error)
+	GetUserByEP(email, password string) (models.User, error)
 	HashPassword(password string) (string, error)
 	//нужно ли мне это???
 	//GetUserById(userId uuid.UUID) (models.User, error)
 	//ComparePassword(password, hashedPassword string) bool
+	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
+	UpdateUserInfo(userInfo models.UserInfo) error
+	
 }
 
 type IEmailSmtpService interface {

@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO change 200 -> 201
+
 func (h *Handler) signUp(c *gin.Context) {
 	var input models.User
 
@@ -37,9 +39,14 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusCreated, map[string]interface{}{
 		"details": "ok",
 	})
+}
+
+type SendConfirmCodeInput struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (h *Handler) sendConfirmCode(c *gin.Context) {
@@ -50,9 +57,9 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 		return
 	}
 
-	target, err := h.services.IUserService.GetUserByUP(input)
+	target, err := h.services.IUserService.GetUserByEP(input.Email, input.Password)
 	if err != nil || target.Email != input.Email {
-		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		newErrorResponse(c, http.StatusUnauthorized, "Bad password")
 		return
 	}
 
@@ -77,7 +84,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 
 	go h.services.IEmailSmtpService.SendConfirmEmailMessage(input)
 
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusCreated, map[string]interface{}{
 		"exp_time":       maxTtl.String(),
 		"next_code_time": (maxTtl - minTtl).String(),
 	})
@@ -113,13 +120,16 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"details": "ok",
-	})
+	c.JSON(http.StatusNoContent, nil)
+}
+
+type SignInStruct struct {
+	Email    string `json:"email" binding:"required" db:"email"`
+	Password string `json:"password" binding:"required" db:"password_hash"`
 }
 
 func (h *Handler) signIn(c *gin.Context) {
-	var input models.User
+	var input SignInStruct
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -137,7 +147,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	target, err := h.services.IUserService.GetUserByUP(input)
+	target, err := h.services.IUserService.GetUserByEP(input.Email, input.Password)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -154,7 +164,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusCreated, map[string]string{
 		"access_token":  token,
 		"refresh_token": refresh,
 	})
@@ -201,7 +211,7 @@ func (h *Handler) refreshToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusCreated, map[string]string{
 		"access_token":  token,
 		"refresh_token": refresh,
 	})
