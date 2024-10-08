@@ -28,9 +28,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/refresh_token", h.refreshToken)
 	}
 
+	router.GET("/user/:user_id", h.getUserInfo)
 	user := router.Group("/user", h.userIdentity)
 	{
-		user.GET("/", h.getUserInfo)
+
 		user.PUT("/", h.updateUserInfo)
 
 	}
