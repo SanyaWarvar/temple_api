@@ -82,7 +82,11 @@ func main() {
 		port = "80"
 	}
 
-	if err := srv.Run(port, handlers.InitRoutes()); err != nil {
+	releaseMode, err := strconv.ParseBool(os.Getenv("RELEASEMODE"))
+	if err != nil {
+		logrus.Fatalf("Error while parse Realease mode from .env: %s", err.Error())
+	}
+	if err := srv.Run(port, handlers.InitRoutes(releaseMode)); err != nil {
 		logrus.Fatalf("Error while running server: %s", err.Error())
 	}
 
