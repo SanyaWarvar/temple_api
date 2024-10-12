@@ -28,12 +28,17 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/refresh_token", h.refreshToken)
 	}
 
-	router.GET("/user/:user_id", h.getUserInfo)
+	router.GET("/user/:username", h.getUserInfo)
 	user := router.Group("/user", h.userIdentity)
 	{
-
 		user.PUT("/", h.updateUserInfo)
-
+		friend := user.Group("/friends")
+		{
+			friend.GET("/", h.getAllFriends)
+			friend.POST("/:username", h.inviteFriend)
+			friend.DELETE("/:username", h.deleteFriend)
+			friend.PUT("/:username", h.confirmFriend)
+		}
 	}
 
 	return router

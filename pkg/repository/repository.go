@@ -20,6 +20,7 @@ type IUserRepo interface {
 	ComparePassword(password, hashedPassword string) bool
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
+	GetUserInfoByU(username string) (models.UserInfo, error)
 }
 
 type IEmailSmtpRepo interface {
@@ -44,8 +45,17 @@ type IJwtManagerRepo interface {
 }
 
 type ICacheRepo interface {
+	//emailsmtp
 	GetConfirmCode(email string) (string, time.Duration, error)
 	SaveConfirmCode(email, code string) error
+
+	//friends
+}
+
+type IFriendRepo interface {
+	InviteFriend(fromId uuid.UUID, toUsername string) error
+	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
+	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
 }
 
 type Repository struct {
@@ -53,6 +63,7 @@ type Repository struct {
 	IEmailSmtpRepo
 	IJwtManagerRepo
 	ICacheRepo
+	IFriendRepo
 }
 
 func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, emailCfg *EmailCfg, jwtCfg *JwtManagerCfg) *Repository {
@@ -61,5 +72,6 @@ func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, em
 		IEmailSmtpRepo:  NewEmailSmtpPostgres(db, emailCfg),
 		IJwtManagerRepo: NewJwtManagerPostgres(db, jwtCfg),
 		ICacheRepo:      NewCacheRedis(cacheDb, codeExp),
+		IFriendRepo:     NewFriendPostgres(db),
 	}
 }

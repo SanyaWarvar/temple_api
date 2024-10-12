@@ -94,6 +94,13 @@ func (r *UserPostgres) GetUserInfoById(userId uuid.UUID) (models.UserInfo, error
 	return userInfo, err
 }
 
+func (r *UserPostgres) GetUserInfoByU(username string) (models.UserInfo, error) {
+	var userInfo models.UserInfo
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE user_id = (SELECT id FROM %s WHERE username = $1)`, usersInfoTable, usersTable)
+	err := r.db.Get(&userInfo, query, username)
+	return userInfo, err
+}
+
 func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 
 	fields := make([]string, 0)

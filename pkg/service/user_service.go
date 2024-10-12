@@ -64,3 +64,7 @@ func (s *UserService) GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 func (s *UserService) UpdateUserInfo(userInfo models.UserInfo) error {
 	return s.repo.UpdateUserInfo(userInfo)
 }
+
+func (s *UserService) GetUserInfoByU(username string) (models.UserInfo, error) {
+	return s.repo.GetUserInfoByU(username)
+}

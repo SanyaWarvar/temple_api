@@ -10,6 +10,7 @@ const (
 	usersTable     = "users"
 	tokenTable     = "tokens"
 	usersInfoTable = "users_info"
+	friendsTable   = "friends_invites"
 )
 
 type Config struct {
