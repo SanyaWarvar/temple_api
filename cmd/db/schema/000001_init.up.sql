@@ -14,12 +14,20 @@ CREATE TABLE tokens(
 );
 
 CREATE TABLE users_info(
-user_id UUID REFERENCES users(id) PRIMARY KEY,
-first_name varchar(32) NOT NULL,
-second_name varchar(32),
-status varchar(32),
-birthday Timestamp,
-gender varchar(16),
-country varchar(32),
-city varchar(32)
+    user_id UUID REFERENCES users(id) PRIMARY KEY,
+    first_name varchar(32) NOT NULL,
+    second_name varchar(32),
+    status varchar(32),
+    birthday Timestamp,
+    gender varchar(16),
+    country varchar(32),
+    city varchar(32)
+);
+
+CREATE TABLE friends_invites(
+    from_user_id UUID REFERENCES users(id),
+    to_user_id UUID REFERENCES users(id),
+    confirmed boolean NOT NULL DEFAULT 'f',
+    PRIMARY KEY(from_user_id, to_user_id),
+    CHECK (from_user_id != to_user_id)
 );

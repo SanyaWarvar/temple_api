@@ -17,8 +17,8 @@ type IUserService interface {
 	//GetUserById(userId uuid.UUID) (models.User, error)
 	//ComparePassword(password, hashedPassword string) bool
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
+	GetUserInfoByU(username string) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
-	
 }
 
 type IEmailSmtpService interface {
@@ -49,11 +49,18 @@ type ICacheService interface {
 	SaveConfirmCode(email, code string) error
 }
 
+type IFriendService interface {
+	InviteFriend(fromId uuid.UUID, toUsername string) error
+	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
+	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
 	IJwtManagerService
 	ICacheService
+	IFriendService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -62,5 +69,6 @@ func NewService(repos *repository.Repository) *Service {
 		IEmailSmtpService:  NewEmailSmtpService(repos.IEmailSmtpRepo, repos.ICacheRepo),
 		IJwtManagerService: NewJwtManagerService(repos.IJwtManagerRepo),
 		ICacheService:      NewCacheService(repos.ICacheRepo),
+		IFriendService:     NewFriendService(repos.IFriendRepo),
 	}
 }

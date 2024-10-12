@@ -5,18 +5,16 @@ import (
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func (h *Handler) getUserInfo(c *gin.Context) {
-	userIdString := c.Param("user_id")
-
-	userId, err := uuid.Parse(userIdString)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "Can't parse user id")
+	username := c.Param("username")
+	if username == "" {
+		newErrorResponse(c, http.StatusBadRequest, "bad username")
 		return
 	}
-	userInfo, err := h.services.IUserService.GetUserInfoById(userId)
+
+	userInfo, err := h.services.IUserService.GetUserInfoByU(username)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
