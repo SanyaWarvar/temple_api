@@ -15,7 +15,10 @@ func NewHandler(services *service.Service) *Handler {
 	return &Handler{services: services}
 }
 
-func (h *Handler) InitRoutes() *gin.Engine {
+func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
+	if releaseMode {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	router := gin.New()
 	router.HEAD("/health", h.check_health)
 
