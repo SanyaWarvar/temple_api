@@ -50,7 +50,7 @@ type SendConfirmCodeInput struct {
 }
 
 func (h *Handler) sendConfirmCode(c *gin.Context) {
-	var input models.User
+	var input SendConfirmCodeInput
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -82,7 +82,7 @@ func (h *Handler) sendConfirmCode(c *gin.Context) {
 		return
 	}
 
-	go h.services.IEmailSmtpService.SendConfirmEmailMessage(input)
+	go h.services.IEmailSmtpService.SendConfirmEmailMessage(input.Email)
 
 	c.JSON(http.StatusCreated, map[string]interface{}{
 		"exp_time":       maxTtl.String(),

@@ -25,7 +25,7 @@ type IUserService interface {
 type IEmailSmtpService interface {
 	CheckEmailConfirm(email string) (bool, error)
 	ConfirmEmail(email, code string) error
-	SendConfirmEmailMessage(user models.User) error
+	SendConfirmEmailMessage(email string) error
 	SendMessage(email, messageText, title string) error
 	GenerateConfirmCode() string
 }

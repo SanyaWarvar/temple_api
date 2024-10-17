@@ -27,7 +27,7 @@ type IUserRepo interface {
 type IEmailSmtpRepo interface {
 	CheckEmailConfirm(email string) (bool, error)
 	ConfirmEmail(email string) error
-	SendConfirmEmailMessage(user models.User, code string) error
+	SendConfirmEmailMessage(email, code string) error
 	SendMessage(email, messageText, title string) error
 	GenerateConfirmCode() string
 }
