@@ -83,7 +83,6 @@ next_code_time - время, по прошествии которого, мож�
 
    Принимает json формата
    {
-    "username": string,
     "email": string,
     "password": string
    }
