@@ -125,3 +125,23 @@ func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 	_, err := r.db.Exec(query, values...)
 	return err
 }
+
+type FindUserOutput struct {
+	FirstName  string  `json:"first_name" db:"first_name"`
+	SecondName string  `json:"second_name" db:"second_name"`
+	Dist       float64 `json:"-" db:"dist"`
+}
+
+func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutput, error) {
+	var userInfo []FindUserOutput
+	offset := page * 50
+	query := fmt.Sprintf(`
+	SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist
+	from %s order by dist
+	LIMIT 50
+	OFFSET $2
+	 `, usersInfoTable,
+	)
+	err := r.db.Select(&userInfo, query, searchString, offset)
+	return userInfo, err
+}

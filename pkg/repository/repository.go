@@ -21,12 +21,13 @@ type IUserRepo interface {
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
 	GetUserInfoByU(username string) (models.UserInfo, error)
+	FindUsers(searchString string, page int) ([]FindUserOutput, error)
 }
 
 type IEmailSmtpRepo interface {
 	CheckEmailConfirm(email string) (bool, error)
 	ConfirmEmail(email string) error
-	SendConfirmEmailMessage(user models.User, code string) error
+	SendConfirmEmailMessage(email, code string) error
 	SendMessage(email, messageText, title string) error
 	GenerateConfirmCode() string
 }

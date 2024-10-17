@@ -31,3 +31,27 @@ CREATE TABLE friends_invites(
     PRIMARY KEY(from_user_id, to_user_id),
     CHECK (from_user_id != to_user_id)
 );
+
+create extension pg_trgm;
+
+create or replace function fullname(first_name varchar, second_name varchar)
+returns text
+language plpgsql
+immutable
+as $$
+begin
+  return regexp_replace(
+    lower(
+      trim(
+        coalesce(first_name, '') || ' ' ||
+        coalesce(second_name, '')
+      )
+    ),
+    'ё',
+    'е',
+    'g'
+   );
+exception
+  when others then raise exception '%', sqlerrm;
+end;
+$$;

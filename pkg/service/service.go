@@ -19,12 +19,13 @@ type IUserService interface {
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
+	FindUsers(searchString string, page int) ([]repository.FindUserOutput, error)
 }
 
 type IEmailSmtpService interface {
 	CheckEmailConfirm(email string) (bool, error)
 	ConfirmEmail(email, code string) error
-	SendConfirmEmailMessage(user models.User) error
+	SendConfirmEmailMessage(email string) error
 	SendMessage(email, messageText, title string) error
 	GenerateConfirmCode() string
 }

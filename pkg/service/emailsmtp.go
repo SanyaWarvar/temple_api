@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/SanyaWarvar/temple_api/pkg/repository"
 	"github.com/sirupsen/logrus"
 )
@@ -25,10 +24,10 @@ func (s *EmailSmtpService) SendMessage(email, messageText, title string) error {
 	return s.repo.SendMessage(email, messageText, title)
 }
 
-func (s *EmailSmtpService) SendConfirmEmailMessage(user models.User) error {
+func (s *EmailSmtpService) SendConfirmEmailMessage(email string) error {
 	code := s.GenerateConfirmCode()
-	s.cache.SaveConfirmCode(user.Email, code)
-	err := s.repo.SendConfirmEmailMessage(user, code)
+	s.cache.SaveConfirmCode(email, code)
+	err := s.repo.SendConfirmEmailMessage(email, code)
 	if err != nil {
 		logrus.Errorf("error while sending confirm email message: %s", err.Error())
 	}
