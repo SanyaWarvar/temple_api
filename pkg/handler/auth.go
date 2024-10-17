@@ -116,7 +116,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 
 	err = h.services.IEmailSmtpService.ConfirmEmail(input.Email, input.Code)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 

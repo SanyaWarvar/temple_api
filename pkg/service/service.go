@@ -19,6 +19,7 @@ type IUserService interface {
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
+	FindUsers(searchString string, page int) ([]repository.FindUserOutput, error)
 }
 
 type IEmailSmtpService interface {

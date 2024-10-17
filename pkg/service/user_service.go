@@ -68,3 +68,7 @@ func (s *UserService) UpdateUserInfo(userInfo models.UserInfo) error {
 func (s *UserService) GetUserInfoByU(username string) (models.UserInfo, error) {
 	return s.repo.GetUserInfoByU(username)
 }
+
+func (s *UserService) FindUsers(searchString string, page int) ([]repository.FindUserOutput, error) {
+	return s.repo.FindUsers(searchString, page)
+}

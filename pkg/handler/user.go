@@ -47,3 +47,19 @@ func (h *Handler) updateUserInfo(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+type findUserStruct struct {
+	SearchString string `json:"search_string" binding:"required"`
+	Page         int    `json:"page"`
+}
+
+func (h *Handler) findUser(c *gin.Context) {
+	var input findUserStruct
+	c.BindJSON(&input)
+	users, err := h.services.IUserService.FindUsers(input.SearchString, input.Page)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}

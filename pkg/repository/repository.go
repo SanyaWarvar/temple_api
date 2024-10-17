@@ -21,6 +21,7 @@ type IUserRepo interface {
 	GetUserInfoById(userId uuid.UUID) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
 	GetUserInfoByU(username string) (models.UserInfo, error)
+	FindUsers(searchString string, page int) ([]FindUserOutput, error)
 }
 
 type IEmailSmtpRepo interface {
