@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Handler) inviteFriend(c *gin.Context) {
-	requestOwnerId, err := getUserId(c)
+	requestOwnerId, err := getUserId(c, true)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -32,7 +32,7 @@ func (h *Handler) inviteFriend(c *gin.Context) {
 }
 
 func (h *Handler) deleteFriend(c *gin.Context) {
-	OwnerId, err := getUserId(c)
+	OwnerId, err := getUserId(c, true)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -51,7 +51,7 @@ func (h *Handler) getAllFriends(c *gin.Context) {
 }
 
 func (h *Handler) confirmFriend(c *gin.Context) {
-	OwnerId, err := getUserId(c)
+	OwnerId, err := getUserId(c, true)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

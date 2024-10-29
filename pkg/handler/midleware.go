@@ -37,15 +37,15 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	c.Set(userCtx, accessToken.UserId)
 }
 
-func getUserId(c *gin.Context) (uuid.UUID, error) {
+func getUserId(c *gin.Context, withMessage bool) (uuid.UUID, error) {
 	userId, ok := c.Get(userCtx)
-	if !ok {
+	if !ok && withMessage {
 		newErrorResponse(c, http.StatusInternalServerError, "user id not found")
 		return [16]byte{}, errors.New("user id not found")
 	}
 
 	idInt, ok := userId.(uuid.UUID)
-	if !ok {
+	if !ok && withMessage {
 		newErrorResponse(c, http.StatusInternalServerError, "user id is invalid")
 		return [16]byte{}, errors.New("user id is invalid")
 	}

@@ -24,7 +24,7 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 }
 
 func (h *Handler) updateUserInfo(c *gin.Context) {
-	userId, err := getUserId(c)
+	userId, err := getUserId(c, true)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "Can't parse user id")
 		return

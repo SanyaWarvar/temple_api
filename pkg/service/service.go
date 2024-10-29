@@ -56,12 +56,24 @@ type IFriendService interface {
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
 }
 
+type IUsersPostsService interface {
+	CreatePost(post models.UserPost) (uuid.UUID, error)
+	UpdatePost(newPost models.UserPost) error
+	GetPostById(postId, userId uuid.UUID) (repository.UserPostOutput, error)
+	DeletePostById(postId, userId uuid.UUID) error
+
+	GetPostsByU(username string, page int, userId uuid.UUID) ([]repository.UserPostOutput, error)
+
+	LikePostById(postId, userId uuid.UUID) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
 	IJwtManagerService
 	ICacheService
 	IFriendService
+	IUsersPostsService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -71,5 +83,6 @@ func NewService(repos *repository.Repository) *Service {
 		IJwtManagerService: NewJwtManagerService(repos.IJwtManagerRepo),
 		ICacheService:      NewCacheService(repos.ICacheRepo),
 		IFriendService:     NewFriendService(repos.IFriendRepo),
+		IUsersPostsService: NewUsersPostsService(repos.IUsersPostsRepo),
 	}
 }

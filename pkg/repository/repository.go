@@ -59,12 +59,24 @@ type IFriendRepo interface {
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
 }
 
+type IUsersPostsRepo interface {
+	CreatePost(post models.UserPost) error
+	UpdatePost(newPost models.UserPost) error
+	GetPostById(postId, userId uuid.UUID) (UserPostOutput, error)
+	DeletePostById(postId, userId uuid.UUID) error 
+
+	GetPostsByU(username string, page int, userId uuid.UUID) ([]UserPostOutput, error)
+
+	LikePostById(postId, userId uuid.UUID) error
+}
+
 type Repository struct {
 	IUserRepo
 	IEmailSmtpRepo
 	IJwtManagerRepo
 	ICacheRepo
 	IFriendRepo
+	IUsersPostsRepo
 }
 
 func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, emailCfg *EmailCfg, jwtCfg *JwtManagerCfg) *Repository {
@@ -74,5 +86,6 @@ func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, em
 		IJwtManagerRepo: NewJwtManagerPostgres(db, jwtCfg),
 		ICacheRepo:      NewCacheRedis(cacheDb, codeExp),
 		IFriendRepo:     NewFriendPostgres(db),
+		IUsersPostsRepo: NewUsersPostsPostgres(db),
 	}
 }

@@ -32,7 +32,8 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	}
 
 	router.GET("/user/:username", h.getUserInfo)
-	router.GET("/user/find", h.findUser)
+	router.GET("/user/find", h.findUser) // New
+
 	user := router.Group("/user", h.userIdentity)
 	{
 		user.PUT("/", h.updateUserInfo)
@@ -43,7 +44,18 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 			friend.DELETE("/:username", h.deleteFriend)
 			friend.PUT("/:username", h.confirmFriend)
 		}
+		user.GET("/posts/:username", h.getPostsByU) // New
 
+	}
+
+	usersPosts := router.Group("/users_posts", h.userIdentity)
+	{
+		usersPosts.GET("/:id", h.getPost)
+		usersPosts.POST("/", h.createPost)
+		usersPosts.DELETE("/:id", h.deletePost)
+		usersPosts.PUT("/:id", h.updatePost)
+
+		usersPosts.PUT("/like/:id", h.likePost)
 	}
 
 	return router

@@ -55,3 +55,17 @@ exception
   when others then raise exception '%', sqlerrm;
 end;
 $$;
+
+CREATE TABLE users_posts(
+    id UUID PRIMARY KEY,
+    author_id UUID REFERENCES users(id),
+    body text NOT NULL,
+    last_update Timestamp DEFAULT Now() NOT NULL,
+    edited boolean DEFAULT 'f' NOT NULL
+);
+
+CREATE TABLE users_posts_likes(
+    post_id UUID REFERENCES users_posts(id),
+    user_id UUID REFERENCES users(id),
+    PRIMARY KEY(post_id, user_id)
+);
