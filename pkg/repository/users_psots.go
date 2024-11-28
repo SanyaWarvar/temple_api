@@ -105,6 +105,7 @@ func (r *UsersPostsPostgres) GetPostsByU(username string, page int, userId uuid.
 		usersPostsLikesTable,
 	)
 	err := r.db.Select(&data, query, username, userId, page*50)
+	fmt.Println(data)
 	return data, err
 }
 

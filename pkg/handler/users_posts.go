@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -112,6 +113,7 @@ func (h *Handler) getPostsByU(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	fmt.Println(username)
 	data, err := h.services.IUsersPostsService.GetPostsByU(username, input.Page, userId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())

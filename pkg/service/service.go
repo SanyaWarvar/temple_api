@@ -67,6 +67,17 @@ type IUsersPostsService interface {
 	LikePostById(postId, userId uuid.UUID) error
 }
 
+type IMessagesService interface {
+	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
+	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
+	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+
+	CreateMessage(data models.Message) error
+	ReadMessage(messageId, userId uuid.UUID) error
+	EditMessage(userId uuid.UUID, message models.Message) error
+	DeleteMessage(messageId, userId uuid.UUID) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
@@ -74,6 +85,7 @@ type Service struct {
 	ICacheService
 	IFriendService
 	IUsersPostsService
+	IMessagesService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -84,5 +96,6 @@ func NewService(repos *repository.Repository) *Service {
 		ICacheService:      NewCacheService(repos.ICacheRepo),
 		IFriendService:     NewFriendService(repos.IFriendRepo),
 		IUsersPostsService: NewUsersPostsService(repos.IUsersPostsRepo),
+		IMessagesService:   NewMessagesService(repos.IMessagesRepo),
 	}
 }

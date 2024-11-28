@@ -63,11 +63,22 @@ type IUsersPostsRepo interface {
 	CreatePost(post models.UserPost) error
 	UpdatePost(newPost models.UserPost) error
 	GetPostById(postId, userId uuid.UUID) (UserPostOutput, error)
-	DeletePostById(postId, userId uuid.UUID) error 
+	DeletePostById(postId, userId uuid.UUID) error
 
 	GetPostsByU(username string, page int, userId uuid.UUID) ([]UserPostOutput, error)
 
 	LikePostById(postId, userId uuid.UUID) error
+}
+
+type IMessagesRepo interface {
+	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
+	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
+	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+
+	CreateMessage(data models.Message) error
+	ReadMessage(messageId, userId uuid.UUID) error
+	EditMessage(userId uuid.UUID, message models.Message) error
+	DeleteMessage(messageId, userId uuid.UUID) error
 }
 
 type Repository struct {
@@ -77,6 +88,7 @@ type Repository struct {
 	ICacheRepo
 	IFriendRepo
 	IUsersPostsRepo
+	IMessagesRepo
 }
 
 func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, emailCfg *EmailCfg, jwtCfg *JwtManagerCfg) *Repository {
@@ -87,5 +99,6 @@ func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, em
 		ICacheRepo:      NewCacheRedis(cacheDb, codeExp),
 		IFriendRepo:     NewFriendPostgres(db),
 		IUsersPostsRepo: NewUsersPostsPostgres(db),
+		IMessagesRepo:   NewMessagesPostgres(db),
 	}
 }

@@ -58,6 +58,22 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 		usersPosts.PUT("/like/:id", h.likePost)
 	}
 
+	chats := router.Group("chats", h.userIdentity)
+	{
+		chats.GET("/", h.GetAllChats) //получить все чаты юзера
+		chats.POST("/", h.CreateChat) //создать новый чат
+
+		messages := chats.Group("/messages")
+		{
+			messages.GET("/:chat_id", h.GetChat)             // получить все сообщения из чата
+			messages.POST("/:chat_id", h.NewMessage)         // отправить сообщение в чат
+			messages.PUT("/read/:message_id", h.ReadMessage) // прочитать сообщение
+			messages.PUT("/", h.EditMessage)                 // редактировать сообщение
+			messages.DELETE("/:message_id", h.DeleteMessage) // удалить сообщение
+		}
+
+	}
+
 	return router
 }
 
