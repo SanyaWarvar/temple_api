@@ -18,7 +18,8 @@ import (
 )
 
 func main() {
-
+	err := os.MkdirAll("user_data/profile_pictures", 0750)
+	fmt.Println(err)
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
 	if err := godotenv.Load(".env"); err != nil {
