@@ -15,6 +15,7 @@ CREATE TABLE tokens(
 
 CREATE TABLE users_info(
     user_id UUID REFERENCES users(id) PRIMARY KEY,
+    profile_picture text DEFAULT 'user_data/profile_pictures/base.jpg' NOT NULL,
     first_name varchar(32) NOT NULL,
     second_name varchar(32),
     status varchar(32),

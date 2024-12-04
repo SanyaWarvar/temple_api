@@ -20,6 +20,7 @@ type IUserService interface {
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	UpdateUserInfo(userInfo models.UserInfo) error
 	FindUsers(searchString string, page int) ([]repository.FindUserOutput, error)
+	UpdateProfPic(userId uuid.UUID, path string) error
 }
 
 type IEmailSmtpService interface {
@@ -54,6 +55,7 @@ type IFriendService interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
+	GetAllFriend(userId uuid.UUID, page int) (repository.FriendListOutput, error)
 }
 
 type IUsersPostsService interface {

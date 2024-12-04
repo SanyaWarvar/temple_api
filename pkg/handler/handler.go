@@ -22,6 +22,11 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	router := gin.New()
 	router.HEAD("/health", h.check_health)
 
+	images := router.Group("/images")
+	{
+		images.Static("/profiles", "./user_data/profile_pictures")
+	}
+
 	auth := router.Group("/auth")
 	{
 		auth.POST("/sign_up", h.signUp)
@@ -37,11 +42,10 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	user := router.Group("/user", h.userIdentity)
 	{
 		user.PUT("/", h.updateUserInfo)
-		user.PUT("/profile_pic", h.updateProfPic)
-		user.GET("/profile_pic", h.getProfPic)
+		user.PUT("/profile_pic", h.updateProfPic) // new
 		friend := user.Group("/friends")
 		{
-			friend.GET("/", h.getAllFriends)
+			friend.GET("/:page", h.getAllFriends)
 			friend.POST("/:username", h.inviteFriend)
 			friend.DELETE("/:username", h.deleteFriend)
 			friend.PUT("/:username", h.confirmFriend)

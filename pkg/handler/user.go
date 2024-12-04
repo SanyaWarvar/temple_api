@@ -6,6 +6,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
+	"slices"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -77,7 +79,7 @@ type UpdateProfPicInput struct {
 
 func (h *Handler) updateProfPic(c *gin.Context) {
 	var input UpdateProfPicInput
-
+	userId, _ := getUserId(c, false)
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -94,32 +96,23 @@ func (h *Handler) updateProfPic(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to read file"})
 		return
 	}
-	os.Mkdir("user_data", 0755)
-	os.WriteFile(fmt.Sprintf("user_data/%s", input.ProfilePic.Filename), fileBytes, 0644)
-
-	c.JSON(http.StatusOK, "")
-}
-
-type getProfPicInput struct {
-	Path string `json:"path"`
-}
-
-func (h *Handler) getProfPic(c *gin.Context) {
-	var input getProfPicInput
-
-	c.BindJSON(&input)
-
-	file, err := os.Open(input.Path)
-	fmt.Println(err)
-
-	defer file.Close()
-
-	// Читаем файл в байты
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to read file"})
+	suffix := filepath.Ext(input.ProfilePic.Filename)
+	ValidFileSuffixForProfilePicture := []string{".gif", ".jpg", ".png", ".svg"}
+	if !slices.Contains(ValidFileSuffixForProfilePicture, suffix) {
+		newErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("Supported formats: .gif, .jpg, .png, .svg. %s is unsupported!", suffix))
 		return
 	}
 
-	c.Data(http.StatusOK, "application/octet-stream", fileBytes)
+	newFilename := fmt.Sprintf("%s%s", userId, suffix)
+	path := fmt.Sprintf("user_data/profile_pictures/%s", newFilename)
+
+	err = h.services.IUserService.UpdateProfPic(userId, path)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	os.WriteFile(path, fileBytes, 0644)
+
+	c.JSON(http.StatusCreated, map[string]string{"url": c.Request.Host + "/images/profiles/" + newFilename})
 }

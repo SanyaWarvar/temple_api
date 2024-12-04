@@ -126,9 +126,10 @@ func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 }
 
 type FindUserOutput struct {
-	FirstName  string  `json:"first_name" db:"first_name"`
-	SecondName string  `json:"second_name" db:"second_name"`
-	Dist       float64 `json:"-" db:"dist"`
+	FirstName     string  `json:"first_name" db:"first_name"`
+	SecondName    string  `json:"second_name" db:"second_name"`
+	ProfilePicUrl string  `json:"prodile_picture_url" db:"profile_picture"`
+	Dist          float64 `json:"-" db:"dist"`
 }
 
 func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutput, error) {
@@ -138,14 +139,14 @@ func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutpu
 	var query string
 	if strings.HasPrefix(searchString, "@") {
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name FROM %s where user_id = (SELECT id FROM %s WHERE username = $1)
+		SELECT first_name, second_name, profile_picture FROM %s where user_id = (SELECT id FROM %s WHERE username = $1)
 		LIMIT 50
 		OFFSET $2
 		 `, usersInfoTable, usersTable,
 		)
 	} else {
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist
+		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist, profile_picture
 		from %s order by dist
 		LIMIT 50
 		OFFSET $2
@@ -155,4 +156,19 @@ func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutpu
 
 	err := r.db.Select(&userInfo, query, searchString, offset)
 	return userInfo, err
+}
+
+func (r *UserPostgres) UpdateProfPic(userId uuid.UUID, path string) error {
+
+	query := fmt.Sprintf(
+		`
+		UPDATE %s
+		SET profile_picture = $1
+		WHERE user_id = $2
+		`,
+		usersInfoTable,
+	)
+
+	_, err := r.db.Exec(query, path, userId)
+	return err
 }

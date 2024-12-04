@@ -22,6 +22,7 @@ type IUserRepo interface {
 	UpdateUserInfo(userInfo models.UserInfo) error
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	FindUsers(searchString string, page int) ([]FindUserOutput, error)
+	UpdateProfPic(userId uuid.UUID, path string) error
 }
 
 type IEmailSmtpRepo interface {
@@ -57,6 +58,7 @@ type IFriendRepo interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
+	GetAllFriend(userId uuid.UUID, page int) (FriendListOutput, error)
 }
 
 type IUsersPostsRepo interface {
