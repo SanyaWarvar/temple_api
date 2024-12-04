@@ -7,10 +7,15 @@ import (
 )
 
 const (
-	usersTable     = "users"
-	tokenTable     = "tokens"
-	usersInfoTable = "users_info"
-	friendsTable   = "friends_invites"
+	usersTable           = "users"
+	tokenTable           = "tokens"
+	usersInfoTable       = "users_info"
+	friendsTable         = "friends_invites"
+	usersPostsTable      = "users_posts"
+	usersPostsLikesTable = "users_posts_likes"
+	chatsTable           = "chats"
+	chatMembersTable     = "chat_members"
+	messagesTable        = "messages"
 )
 
 type Config struct {

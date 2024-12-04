@@ -56,12 +56,36 @@ type IFriendService interface {
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
 }
 
+type IUsersPostsService interface {
+	CreatePost(post models.UserPost) (uuid.UUID, error)
+	UpdatePost(newPost models.UserPost) error
+	GetPostById(postId, userId uuid.UUID) (repository.UserPostOutput, error)
+	DeletePostById(postId, userId uuid.UUID) error
+
+	GetPostsByU(username string, page int, userId uuid.UUID) ([]repository.UserPostOutput, error)
+
+	LikePostById(postId, userId uuid.UUID) error
+}
+
+type IMessagesService interface {
+	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
+	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
+	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+
+	CreateMessage(data models.Message) error
+	ReadMessage(messageId, userId uuid.UUID) error
+	EditMessage(userId uuid.UUID, message models.Message) error
+	DeleteMessage(messageId, userId uuid.UUID) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
 	IJwtManagerService
 	ICacheService
 	IFriendService
+	IUsersPostsService
+	IMessagesService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -71,5 +95,7 @@ func NewService(repos *repository.Repository) *Service {
 		IJwtManagerService: NewJwtManagerService(repos.IJwtManagerRepo),
 		ICacheService:      NewCacheService(repos.ICacheRepo),
 		IFriendService:     NewFriendService(repos.IFriendRepo),
+		IUsersPostsService: NewUsersPostsService(repos.IUsersPostsRepo),
+		IMessagesService:   NewMessagesService(repos.IMessagesRepo),
 	}
 }

@@ -55,3 +55,38 @@ exception
   when others then raise exception '%', sqlerrm;
 end;
 $$;
+
+CREATE TABLE users_posts(
+    id UUID PRIMARY KEY,
+    author_id UUID REFERENCES users(id),
+    body text NOT NULL,
+    last_update Timestamp DEFAULT Now() NOT NULL,
+    edited boolean DEFAULT 'f' NOT NULL
+);
+
+CREATE TABLE users_posts_likes(
+    post_id UUID REFERENCES users_posts(id),
+    user_id UUID REFERENCES users(id),
+    PRIMARY KEY(post_id, user_id)
+);
+
+CREATE TABLE chats(
+    id UUID PRIMARY KEY
+);
+
+CREATE TABLE chat_members(
+    chat_id UUID REFERENCES chats(id),
+    user_id UUID REFERENCES users(id),
+    PRIMARY KEY (chat_id, user_id)
+);
+
+CREATE TABLE messages(
+    id UUID PRIMARY KEY,
+    body text NOT NULL,
+    author_id UUID REFERENCES users(id) NOT NULL,
+    chat_id UUID REFERENCES chats(id) NOT NULL,
+    created_at Timestamp DEFAULT Now() NOT NULL,
+    readed boolean DEFAULT 'f' NOT NULL,
+    edited boolean DEFAULT 'f' NOT NULL,
+    reply_to UUID REFERENCES messages(id)
+);

@@ -102,7 +102,6 @@ func (r *UserPostgres) GetUserInfoByU(username string) (models.UserInfo, error) 
 }
 
 func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
-
 	fields := make([]string, 0)
 	values := make([]interface{}, 0)
 
@@ -134,14 +133,26 @@ type FindUserOutput struct {
 
 func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutput, error) {
 	var userInfo []FindUserOutput
-	offset := page * 50
-	query := fmt.Sprintf(`
-	SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist
-	from %s order by dist
-	LIMIT 50
-	OFFSET $2
-	 `, usersInfoTable,
-	)
+
+	offset := (page - 1) * 50
+	var query string
+	if strings.HasPrefix(searchString, "@") {
+		query = fmt.Sprintf(`
+		SELECT first_name, second_name FROM %s where user_id = (SELECT id FROM %s WHERE username = $1)
+		LIMIT 50
+		OFFSET $2
+		 `, usersInfoTable, usersTable,
+		)
+	} else {
+		query = fmt.Sprintf(`
+		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist
+		from %s order by dist
+		LIMIT 50
+		OFFSET $2
+		 `, usersInfoTable,
+		)
+	}
+
 	err := r.db.Select(&userInfo, query, searchString, offset)
 	return userInfo, err
 }
