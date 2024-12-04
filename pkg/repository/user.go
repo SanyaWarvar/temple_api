@@ -128,7 +128,7 @@ func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 type FindUserOutput struct {
 	FirstName     string  `json:"first_name" db:"first_name"`
 	SecondName    string  `json:"second_name" db:"second_name"`
-	ProfilePicUrl string  `json:"prodile_picture_url" db:"profile_picture"`
+	ProfilePicUrl string  `json:"profile_picture_url" db:"profile_picture"`
 	Dist          float64 `json:"-" db:"dist"`
 }
 

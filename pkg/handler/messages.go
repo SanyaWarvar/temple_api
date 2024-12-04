@@ -151,7 +151,8 @@ func (h *Handler) DeleteMessage(c *gin.Context) {
 	messageIdString := c.Param("message_id")
 	messageId, err := uuid.Parse(messageIdString)
 	if err != nil {
-
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
 	userId, _ := getUserId(c, false)
 
