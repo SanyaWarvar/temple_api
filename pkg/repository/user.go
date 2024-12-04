@@ -134,7 +134,7 @@ type FindUserOutput struct {
 func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutput, error) {
 	var userInfo []FindUserOutput
 
-	offset := page * 50
+	offset := (page - 1) * 50
 	var query string
 	if strings.HasPrefix(searchString, "@") {
 		query = fmt.Sprintf(`

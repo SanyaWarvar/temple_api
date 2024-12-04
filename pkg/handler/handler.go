@@ -32,11 +32,13 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	}
 
 	router.GET("/user/:username", h.getUserInfo)
-	router.GET("/user/find", h.findUser) // New
+	router.GET("/user/find", h.findUser)
 
 	user := router.Group("/user", h.userIdentity)
 	{
 		user.PUT("/", h.updateUserInfo)
+		user.PUT("/profile_pic", h.updateProfPic)
+		user.GET("/profile_pic", h.getProfPic)
 		friend := user.Group("/friends")
 		{
 			friend.GET("/", h.getAllFriends)
@@ -57,7 +59,7 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 
 		usersPosts.PUT("/like/:id", h.likePost)
 	}
-
+	//new
 	chats := router.Group("chats", h.userIdentity)
 	{
 		chats.GET("/", h.GetAllChats) //получить все чаты юзера

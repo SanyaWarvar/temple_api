@@ -66,7 +66,7 @@ func (h *Handler) deletePost(c *gin.Context) {
 
 	err = h.services.IUsersPostsService.DeletePostById(postId, userId)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusConflict, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{"details": "success"})
@@ -90,7 +90,7 @@ func (h *Handler) updatePost(c *gin.Context) {
 	post.LastUpdate = time.Now()
 	err = h.services.IUsersPostsService.UpdatePost(post)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		newErrorResponse(c, http.StatusConflict, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{"details": "success"})
@@ -136,10 +136,10 @@ func (h *Handler) likePost(c *gin.Context) {
 	err = h.services.IUsersPostsService.LikePostById(postId, userId)
 	if err != nil {
 		if strings.Contains(err.Error(), "foreign key constraint") {
-			newErrorResponse(c, http.StatusBadRequest, "post not found")
+			newErrorResponse(c, http.StatusConflict, "post not found")
 			return
 		} else {
-			newErrorResponse(c, http.StatusBadRequest, err.Error())
+			newErrorResponse(c, http.StatusConflict, err.Error())
 			return
 		}
 

@@ -15,6 +15,19 @@ func NewFriendPostgres(db *sqlx.DB) *FriendPostgres {
 	return &FriendPostgres{db: db}
 }
 
+func (r *FriendPostgres) GetAllFriend(userId uuid.UUID) error {
+	query := fmt.Sprintf(
+		`
+		SELECT 
+		
+		`,
+		friendsTable,
+		usersTable,
+	)
+	_, err := r.db.Exec(query, userId)
+	return err
+}
+
 func (r *FriendPostgres) InviteFriend(fromId uuid.UUID, toUsername string) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (from_user_id, to_user_id) 

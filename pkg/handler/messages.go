@@ -38,6 +38,9 @@ type PageInput struct {
 func (h *Handler) GetAllChats(c *gin.Context) {
 	var input PageInput
 	err := c.BindJSON(&input)
+	if input.Page == 0 {
+		input.Page = 1
+	}
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -63,6 +66,9 @@ func (h *Handler) GetChat(c *gin.Context) {
 		return
 	}
 	err = c.BindJSON(&input)
+	if input.Page == 0 {
+		input.Page = 1
+	}
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -116,7 +122,8 @@ func (h *Handler) ReadMessage(c *gin.Context) {
 	messageIdString := c.Param("message_id")
 	messageId, err := uuid.Parse(messageIdString)
 	if err != nil {
-
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
 	userId, _ := getUserId(c, false)
 	err = h.services.IMessagesService.ReadMessage(messageId, userId)
