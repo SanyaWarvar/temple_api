@@ -1,4 +1,3 @@
 .env
 user_data/profile_pictures/*
 
-!/user_data/profile_pictures/base_pic.jpg
