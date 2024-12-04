@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +49,29 @@ func (h *Handler) deleteFriend(c *gin.Context) {
 }
 
 func (h *Handler) getAllFriends(c *gin.Context) {
-	// TODO что вообще нужно отдавать? юзер инфо наверное
+	userId, err := getUserId(c, false)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	pageStr := c.Param("page")
+	pageInt, err := strconv.Atoi(pageStr)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	friends, err := h.services.IFriendService.GetAllFriend(userId, pageInt)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for i := range friends.Friends {
+		friends.Friends[i].ProfilePicUrl = c.Request.Host + "/images/profiles" + strings.Replace(friends.Friends[i].ProfilePicUrl, "user_data/profile_pictures", "", 1)
+		fmt.Println(friends.Friends[i])
+	}
+
+	c.JSON(http.StatusOK, friends)
 }
 
 func (h *Handler) confirmFriend(c *gin.Context) {

@@ -15,17 +15,62 @@ func NewFriendPostgres(db *sqlx.DB) *FriendPostgres {
 	return &FriendPostgres{db: db}
 }
 
-func (r *FriendPostgres) GetAllFriend(userId uuid.UUID) error {
+type FriendOutput struct {
+	Fullname      string `json:"fullname" db:"fullname"`
+	Username      string `json:"username" db:"username"`
+	ProfilePicUrl string `json:"profile_pciture_url" db:"profile_pciture"`
+}
+
+type FriendListOutput struct {
+	Friends []FriendOutput `json:"friends" db:"friends"`
+}
+
+func (r *FriendPostgres) GetAllFriend(userId uuid.UUID, page int) (FriendListOutput, error) {
+	offset := (page - 1) * 50
 	query := fmt.Sprintf(
 		`
 		SELECT 
-		
+			ui.first_name || ' ' || ui.second_name AS full_name,
+			u.username,
+			ui.profile_picture
+		FROM 
+			%s fi
+		JOIN 
+			%s u ON u.id = fi.from_user_id OR u.id = fi.to_user_id
+		JOIN 
+			%s ui ON ui.user_id = u.id
+		WHERE 
+			(fi.from_user_id = $1 OR fi.to_user_id = $1) 
+			AND fi.confirmed = 't'
+			AND u.id != $1
+		OFFSET $2
+		LIMIT 50
 		`,
 		friendsTable,
 		usersTable,
+		usersInfoTable,
 	)
-	_, err := r.db.Exec(query, userId)
-	return err
+
+	rows, err := r.db.Query(query, userId, offset)
+	if err != nil {
+		return FriendListOutput{}, err
+	}
+	defer rows.Close()
+
+	var friends []FriendOutput
+	for rows.Next() {
+		var friend FriendOutput
+		if err := rows.Scan(&friend.Fullname, &friend.Username, &friend.ProfilePicUrl); err != nil {
+			return FriendListOutput{}, err
+		}
+		friends = append(friends, friend)
+	}
+
+	if err := rows.Err(); err != nil {
+		return FriendListOutput{}, err
+	}
+
+	return FriendListOutput{Friends: friends}, nil
 }
 
 func (r *FriendPostgres) InviteFriend(fromId uuid.UUID, toUsername string) error {

@@ -24,3 +24,7 @@ func (s *FriendService) DeleteByU(invitedId uuid.UUID, ownerUsername string) err
 func (s *FriendService) ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error {
 	return s.repo.ConfirmFriend(invitedId, ownerUsername)
 }
+
+func (s *FriendService) GetAllFriend(userId uuid.UUID, page int) (repository.FriendListOutput, error) {
+	return s.repo.GetAllFriend(userId, page)
+}

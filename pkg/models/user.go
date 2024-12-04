@@ -46,6 +46,7 @@ func (u *User) IsValid() bool {
 
 type UserInfo struct {
 	UserId     uuid.UUID  `json:"-" db:"user_id"`
+	ProfilePic *string    `json:"profile_pic_url" db:"profile_picture"`
 	FirstName  *string    `json:"first_name" db:"first_name"`
 	SecondName *string    `json:"second_name" db:"second_name"`
 	Status     *string    `json:"status" db:"status"`
