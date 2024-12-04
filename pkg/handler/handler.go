@@ -25,6 +25,7 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	images := router.Group("/images")
 	{
 		images.Static("/profiles", "./user_data/profile_pictures")
+		images.Static("/base", "./base_media")
 	}
 
 	auth := router.Group("/auth")
