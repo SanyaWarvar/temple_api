@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,8 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	*userInfo.ProfilePic = (c.Request.Host + "/images/profiles" + strings.Replace(*userInfo.ProfilePic, "user_data/profile_pictures", "", 1))
 
 	c.JSON(http.StatusOK, userInfo)
 }
