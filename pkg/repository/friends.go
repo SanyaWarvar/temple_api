@@ -22,10 +22,10 @@ type FriendOutput struct {
 }
 
 type FriendListOutput struct {
-	Friends []FriendOutput `json:"friends" db:"friends"`
+	Friends []FriendOutput `json:"friends"`
 }
 
-func (r *FriendPostgres) GetAllFriend(userId uuid.UUID, page int) (FriendListOutput, error) {
+func (r *FriendPostgres) GetAllFriend(username string, page int) (FriendListOutput, error) {
 	offset := (page - 1) * 50
 	query := fmt.Sprintf(
 		`
@@ -40,9 +40,9 @@ func (r *FriendPostgres) GetAllFriend(userId uuid.UUID, page int) (FriendListOut
 		JOIN 
 			%s ui ON ui.user_id = u.id
 		WHERE 
-			(fi.from_user_id = $1 OR fi.to_user_id = $1) 
+			(fi.from_user_id = (select id from users where username = $1) OR fi.to_user_id = (select id from users where username = $1)) 
 			AND fi.confirmed = 't'
-			AND u.id != $1
+			AND u.username != $1
 		OFFSET $2
 		LIMIT 50
 		`,
@@ -51,7 +51,7 @@ func (r *FriendPostgres) GetAllFriend(userId uuid.UUID, page int) (FriendListOut
 		usersInfoTable,
 	)
 
-	rows, err := r.db.Query(query, userId, offset)
+	rows, err := r.db.Query(query, username, offset)
 	if err != nil {
 		return FriendListOutput{}, err
 	}
@@ -71,6 +71,108 @@ func (r *FriendPostgres) GetAllFriend(userId uuid.UUID, page int) (FriendListOut
 	}
 
 	return FriendListOutput{Friends: friends}, nil
+}
+
+type SubListOutput struct {
+	Subscribers []FriendOutput `json:"subscribers"`
+}
+
+func (r *FriendPostgres) GetAllSubs(username string, page int) (SubListOutput, error) {
+	offset := (page - 1) * 50
+	query := fmt.Sprintf(
+		`
+		SELECT 
+			ui.first_name || ' ' || ui.second_name AS full_name,
+			u.username,
+			ui.profile_picture
+		FROM 
+			%s fi
+		JOIN 
+			%s u ON u.id = fi.from_user_id
+		JOIN 
+			%s ui ON ui.user_id = u.id
+		WHERE 
+			fi.to_user_id = (select id from users where username = $1) 
+			AND fi.confirmed = 'f'
+		OFFSET $2
+		LIMIT 50
+		`,
+		friendsTable,
+		usersTable,
+		usersInfoTable,
+	)
+
+	rows, err := r.db.Query(query, username, offset)
+	if err != nil {
+		return SubListOutput{}, err
+	}
+	defer rows.Close()
+
+	var subscribers []FriendOutput
+	for rows.Next() {
+		var subscriber FriendOutput
+		if err := rows.Scan(&subscriber.Fullname, &subscriber.Username, &subscriber.ProfilePicUrl); err != nil {
+			return SubListOutput{}, err
+		}
+		subscribers = append(subscribers, subscriber)
+	}
+
+	if err := rows.Err(); err != nil {
+		return SubListOutput{}, err
+	}
+
+	return SubListOutput{Subscribers: subscribers}, nil
+}
+
+type FollowListOutput struct {
+	Followings []FriendOutput `json:"followings"`
+}
+
+func (r *FriendPostgres) GetAllFollows(username string, page int) (FollowListOutput, error) {
+	offset := (page - 1) * 50
+	query := fmt.Sprintf(
+		`
+		SELECT 
+			ui.first_name || ' ' || ui.second_name AS full_name,
+			u.username,
+			ui.profile_picture
+		FROM 
+			%s fi
+		JOIN 
+			%s u ON u.id = fi.to_user_id
+		JOIN 
+			%s ui ON ui.user_id = u.id
+		WHERE 
+			fi.from_user_id = (select id from users where username = $1) 
+			AND fi.confirmed = 'f'
+		OFFSET $2
+		LIMIT 50
+		`,
+		friendsTable,
+		usersTable,
+		usersInfoTable,
+	)
+
+	rows, err := r.db.Query(query, username, offset)
+	if err != nil {
+		return FollowListOutput{}, err
+	}
+	defer rows.Close()
+
+	var followings []FriendOutput
+	for rows.Next() {
+		var following FriendOutput
+		if err := rows.Scan(&following.Fullname, &following.Username, &following.ProfilePicUrl); err != nil {
+			return FollowListOutput{}, err
+		}
+		followings = append(followings, following)
+	}
+
+	if err := rows.Err(); err != nil {
+		return FollowListOutput{}, err
+	}
+
+	return FollowListOutput{Followings: followings}, nil
 }
 
 func (r *FriendPostgres) InviteFriend(fromId uuid.UUID, toUsername string) error {

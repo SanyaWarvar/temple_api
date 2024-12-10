@@ -55,7 +55,9 @@ type IFriendService interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
-	GetAllFriend(userId uuid.UUID, page int) (repository.FriendListOutput, error)
+	GetAllFriend(username string, page int) (repository.FriendListOutput, error)
+	GetAllSubs(username string, page int) (repository.SubListOutput, error)
+	GetAllFollows(username string, page int) (repository.FollowListOutput, error)
 }
 
 type IUsersPostsService interface {

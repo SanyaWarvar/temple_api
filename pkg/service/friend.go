@@ -25,6 +25,14 @@ func (s *FriendService) ConfirmFriend(invitedId uuid.UUID, ownerUsername string)
 	return s.repo.ConfirmFriend(invitedId, ownerUsername)
 }
 
-func (s *FriendService) GetAllFriend(userId uuid.UUID, page int) (repository.FriendListOutput, error) {
-	return s.repo.GetAllFriend(userId, page)
+func (s *FriendService) GetAllFriend(username string, page int) (repository.FriendListOutput, error) {
+	return s.repo.GetAllFriend(username, page)
+}
+
+func (s *FriendService) GetAllSubs(username string, page int) (repository.SubListOutput, error) {
+	return s.repo.GetAllSubs(username, page)
+}
+
+func (s *FriendService) GetAllFollows(username string, page int) (repository.FollowListOutput, error) {
+	return s.repo.GetAllFollows(username, page)
 }

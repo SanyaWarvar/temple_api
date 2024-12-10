@@ -58,7 +58,9 @@ type IFriendRepo interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
-	GetAllFriend(userId uuid.UUID, page int) (FriendListOutput, error)
+	GetAllFriend(username string, page int) (FriendListOutput, error)
+	GetAllSubs(username string, page int) (SubListOutput, error)
+	GetAllFollows(username string, page int) (FollowListOutput, error)
 }
 
 type IUsersPostsRepo interface {
