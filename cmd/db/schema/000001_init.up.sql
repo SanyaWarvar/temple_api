@@ -91,3 +91,11 @@
         edited boolean DEFAULT 'f' NOT NULL,
         reply_to UUID REFERENCES messages(id)
     );
+
+    CREATE TABLE tiktoks(
+        id UUID PRIMARY KEY,
+        author_id UUID REFERENCES users(id) NOT NULL,
+        created_at Timestamp DEFAULT Now() NOT NULL,
+        title varchar(64) NOT NULL,
+        body text NOT NULL
+    );

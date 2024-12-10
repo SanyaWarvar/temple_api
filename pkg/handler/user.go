@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -8,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -25,12 +25,6 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
-	}
-	if *userInfo.ProfilePic == "base_media/base_pic.jpg"{
-		*userInfo.ProfilePic = (c.Request.Host + "/images/base/" + "base_pic.jpg")
-	}else{
-		*userInfo.ProfilePic = (c.Request.Host + "/images/profiles" + strings.Replace(*userInfo.ProfilePic, "user_data/profile_pictures", "", 1))
-
 	}
 
 	c.JSON(http.StatusOK, userInfo)
@@ -110,8 +104,8 @@ func (h *Handler) updateProfPic(c *gin.Context) {
 		return
 	}
 
-	newFilename := fmt.Sprintf("%s%s", userId, suffix)
-	path := fmt.Sprintf("user_data/profile_pictures/%s", newFilename)
+	
+	path := base64.RawStdEncoding.EncodeToString(fileBytes)
 
 	err = h.services.IUserService.UpdateProfPic(userId, path)
 	if err != nil {
@@ -121,5 +115,5 @@ func (h *Handler) updateProfPic(c *gin.Context) {
 
 	os.WriteFile(path, fileBytes, 0644)
 
-	c.JSON(http.StatusCreated, map[string]string{"url": c.Request.Host + "/images/profiles/" + newFilename})
+	c.JSON(http.StatusCreated, map[string]string{"details": "success"})
 }

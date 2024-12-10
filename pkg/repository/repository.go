@@ -83,6 +83,12 @@ type IMessagesRepo interface {
 	DeleteMessage(messageId, userId uuid.UUID) error
 }
 
+type ITiktokRepo interface {
+	CreateTiktok(item models.Tiktok) error
+	GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
+	DeleteTiktokById(tiktokId, userId uuid.UUID) error
+}
+
 type Repository struct {
 	IUserRepo
 	IEmailSmtpRepo
@@ -91,6 +97,7 @@ type Repository struct {
 	IFriendRepo
 	IUsersPostsRepo
 	IMessagesRepo
+	ITiktokRepo
 }
 
 func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, emailCfg *EmailCfg, jwtCfg *JwtManagerCfg) *Repository {
@@ -102,5 +109,6 @@ func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, em
 		IFriendRepo:     NewFriendPostgres(db),
 		IUsersPostsRepo: NewUsersPostsPostgres(db),
 		IMessagesRepo:   NewMessagesPostgres(db),
+		ITiktokRepo:     NewTiktokPostgres(db),
 	}
 }

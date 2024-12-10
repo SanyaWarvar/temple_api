@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -64,17 +63,6 @@ func (h *Handler) getAllFriends(c *gin.Context) {
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
-	}
-
-	for i := range friends.Friends {
-		if friends.Friends[i].ProfilePicUrl == "base_media/base_pic.jpg" {
-			friends.Friends[i].ProfilePicUrl = (c.Request.Host + "/images/base/" + "base_pic.jpg")
-		} else {
-			friends.Friends[i].ProfilePicUrl = (c.Request.Host + "/images/profiles" + strings.Replace(friends.Friends[i].ProfilePicUrl, "user_data/profile_pictures", "", 1))
-
-		}
-
-		fmt.Println(friends.Friends[i])
 	}
 
 	c.JSON(http.StatusOK, friends)

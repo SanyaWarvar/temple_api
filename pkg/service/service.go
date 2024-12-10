@@ -80,6 +80,12 @@ type IMessagesService interface {
 	DeleteMessage(messageId, userId uuid.UUID) error
 }
 
+type ITiktokService interface {
+	CreateTiktok(item models.Tiktok) error
+	GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
+	DeleteTiktokById(tiktokId, userId uuid.UUID) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
@@ -88,6 +94,7 @@ type Service struct {
 	IFriendService
 	IUsersPostsService
 	IMessagesService
+	ITiktokService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -99,5 +106,6 @@ func NewService(repos *repository.Repository) *Service {
 		IFriendService:     NewFriendService(repos.IFriendRepo),
 		IUsersPostsService: NewUsersPostsService(repos.IUsersPostsRepo),
 		IMessagesService:   NewMessagesService(repos.IMessagesRepo),
+		ITiktokService:     NewTiktokService(repos.ITiktokRepo),
 	}
 }

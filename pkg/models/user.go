@@ -24,14 +24,14 @@ const (
 )
 
 func (u *User) IsValid() bool {
-	matched, err := regexp.Match(UsernamePattern, []byte(u.Username))
+	//matched, err := regexp.Match(UsernamePattern, []byte(u.Username))
 	usernameLen := len([]rune(u.Username))
 	passwordLen := len([]rune(u.Password))
-	if err != nil || !matched {
+	/*if err != nil || !matched {
 		return false
-	}
+	}*/
 
-	matched, err = regexp.Match(PasswordPattern, []byte(u.Password))
+	matched, err := regexp.Match(PasswordPattern, []byte(u.Password))
 	if err != nil || !matched {
 		return false
 	}
@@ -41,12 +41,11 @@ func (u *User) IsValid() bool {
 		return true
 	}
 	return false
-
 }
 
 type UserInfo struct {
 	UserId     uuid.UUID  `json:"-" db:"user_id"`
-	ProfilePic *string    `json:"profile_pic_url" db:"profile_picture"`
+	ProfilePic *string    `json:"profile_pic" db:"profile_picture"`
 	FirstName  *string    `json:"first_name" db:"first_name"`
 	SecondName *string    `json:"second_name" db:"second_name"`
 	Status     *string    `json:"status" db:"status"`
