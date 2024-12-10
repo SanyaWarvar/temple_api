@@ -126,10 +126,10 @@ func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 }
 
 type FindUserOutput struct {
-	FirstName     string  `json:"first_name" db:"first_name"`
-	SecondName    string  `json:"second_name" db:"second_name"`
-	ProfilePicUrl string  `json:"profile_picture_url" db:"profile_picture"`
-	Dist          float64 `json:"-" db:"dist"`
+	FirstName  string  `json:"first_name" db:"first_name"`
+	SecondName string  `json:"second_name" db:"second_name"`
+	ProfilePic string  `json:"profile_picture" db:"profile_picture"`
+	Dist       float64 `json:"-" db:"dist"`
 }
 
 func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutput, error) {

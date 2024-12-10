@@ -58,7 +58,9 @@ type IFriendRepo interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
-	GetAllFriend(userId uuid.UUID, page int) (FriendListOutput, error)
+	GetAllFriend(username string, page int) (FriendListOutput, error)
+	GetAllSubs(username string, page int) (SubListOutput, error)
+	GetAllFollows(username string, page int) (FollowListOutput, error)
 }
 
 type IUsersPostsRepo interface {
@@ -83,6 +85,12 @@ type IMessagesRepo interface {
 	DeleteMessage(messageId, userId uuid.UUID) error
 }
 
+type ITiktokRepo interface {
+	CreateTiktok(item models.Tiktok) error
+	GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
+	DeleteTiktokById(tiktokId, userId uuid.UUID) error
+}
+
 type Repository struct {
 	IUserRepo
 	IEmailSmtpRepo
@@ -91,6 +99,7 @@ type Repository struct {
 	IFriendRepo
 	IUsersPostsRepo
 	IMessagesRepo
+	ITiktokRepo
 }
 
 func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, emailCfg *EmailCfg, jwtCfg *JwtManagerCfg) *Repository {
@@ -102,5 +111,6 @@ func NewRepository(db *sqlx.DB, cacheDb *redis.Client, codeExp time.Duration, em
 		IFriendRepo:     NewFriendPostgres(db),
 		IUsersPostsRepo: NewUsersPostsPostgres(db),
 		IMessagesRepo:   NewMessagesPostgres(db),
+		ITiktokRepo:     NewTiktokPostgres(db),
 	}
 }

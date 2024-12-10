@@ -55,7 +55,9 @@ type IFriendService interface {
 	InviteFriend(fromId uuid.UUID, toUsername string) error
 	DeleteByU(invitedId uuid.UUID, ownerUsername string) error
 	ConfirmFriend(invitedId uuid.UUID, ownerUsername string) error
-	GetAllFriend(userId uuid.UUID, page int) (repository.FriendListOutput, error)
+	GetAllFriend(username string, page int) (repository.FriendListOutput, error)
+	GetAllSubs(username string, page int) (repository.SubListOutput, error)
+	GetAllFollows(username string, page int) (repository.FollowListOutput, error)
 }
 
 type IUsersPostsService interface {
@@ -80,6 +82,12 @@ type IMessagesService interface {
 	DeleteMessage(messageId, userId uuid.UUID) error
 }
 
+type ITiktokService interface {
+	CreateTiktok(item models.Tiktok) error
+	GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
+	DeleteTiktokById(tiktokId, userId uuid.UUID) error
+}
+
 type Service struct {
 	IUserService
 	IEmailSmtpService
@@ -88,6 +96,7 @@ type Service struct {
 	IFriendService
 	IUsersPostsService
 	IMessagesService
+	ITiktokService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -99,5 +108,6 @@ func NewService(repos *repository.Repository) *Service {
 		IFriendService:     NewFriendService(repos.IFriendRepo),
 		IUsersPostsService: NewUsersPostsService(repos.IUsersPostsRepo),
 		IMessagesService:   NewMessagesService(repos.IMessagesRepo),
+		ITiktokService:     NewTiktokService(repos.ITiktokRepo),
 	}
 }

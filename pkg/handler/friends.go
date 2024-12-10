@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -48,8 +47,13 @@ func (h *Handler) deleteFriend(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+type UsernameInput struct {
+	Username string `json:"username"`
+}
+
 func (h *Handler) getAllFriends(c *gin.Context) {
-	userId, err := getUserId(c, false)
+	var input UsernameInput
+	err := c.BindJSON(&input)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -60,24 +64,57 @@ func (h *Handler) getAllFriends(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	friends, err := h.services.IFriendService.GetAllFriend(userId, pageInt)
+	friends, err := h.services.IFriendService.GetAllFriend(input.Username, pageInt)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	for i := range friends.Friends {
-		if friends.Friends[i].ProfilePicUrl == "base_media/base_pic.jpg" {
-			friends.Friends[i].ProfilePicUrl = (c.Request.Host + "/images/base/" + "base_pic.jpg")
-		} else {
-			friends.Friends[i].ProfilePicUrl = (c.Request.Host + "/images/profiles" + strings.Replace(friends.Friends[i].ProfilePicUrl, "user_data/profile_pictures", "", 1))
+	c.JSON(http.StatusOK, friends)
+}
 
-		}
-
-		fmt.Println(friends.Friends[i])
+func (h *Handler) getAllSubs(c *gin.Context) {
+	var input UsernameInput
+	err := c.BindJSON(&input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	pageStr := c.Param("page")
+	pageInt, err := strconv.Atoi(pageStr)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	subs, err := h.services.IFriendService.GetAllSubs(input.Username, pageInt)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
 
-	c.JSON(http.StatusOK, friends)
+	c.JSON(http.StatusOK, subs)
+}
+
+func (h *Handler) getAllFollows(c *gin.Context) {
+	var input UsernameInput
+	err := c.BindJSON(&input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	pageStr := c.Param("page")
+	pageInt, err := strconv.Atoi(pageStr)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	follows, err := h.services.IFriendService.GetAllFollows(input.Username, pageInt)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, follows)
 }
 
 func (h *Handler) confirmFriend(c *gin.Context) {

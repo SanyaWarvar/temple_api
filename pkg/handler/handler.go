@@ -43,7 +43,9 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	user := router.Group("/user", h.userIdentity)
 	{
 		user.PUT("/", h.updateUserInfo)
-		user.PUT("/profile_pic", h.updateProfPic) // new
+		user.PUT("/profile_pic", h.updateProfPic)   // new
+		user.GET("/follows/:page", h.getAllFollows) // new
+		user.GET("/subs/:page", h.getAllSubs)       // new
 		friend := user.Group("/friends")
 		{
 			friend.GET("/:page", h.getAllFriends)
@@ -78,6 +80,14 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 			messages.PUT("/", h.EditMessage)                 // редактировать сообщение
 			messages.DELETE("/:message_id", h.DeleteMessage) // удалить сообщение
 		}
+
+	}
+
+	tiktoks := router.Group("rofls", h.userIdentity)
+	{
+		tiktoks.POST("/", h.createTiktok)
+		tiktoks.GET("/:id", h.getTiktokById)
+		tiktoks.DELETE("/:id", h.deleteTiktokById)
 
 	}
 
