@@ -96,7 +96,7 @@ func (r *UserPostgres) GetUserInfoById(userId uuid.UUID) (models.UserInfo, error
 
 func (r *UserPostgres) GetUserInfoByU(username string) (models.UserInfo, error) {
 	var userInfo models.UserInfo
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE user_id = (SELECT id FROM %s WHERE username = $1)`, usersInfoTable, usersTable)
+	query := fmt.Sprintf(`SELECT user_id, (select username from users where id = ui.user_id) as profile_picture, first_name, second_name, status, birthday, gender, country, city FROM %s WHERE user_id = (SELECT id FROM %s WHERE username = $1)`, usersInfoTable, usersTable)
 	err := r.db.Get(&userInfo, query, username)
 	return userInfo, err
 }
@@ -139,15 +139,15 @@ func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutpu
 	var query string
 	if strings.HasPrefix(searchString, "@") {
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name, profile_picture FROM %s where user_id = (SELECT id FROM %s WHERE username = $1)
+		SELECT first_name, second_name, (select username from users where id = ui.user_id) as profile_picture FROM %s ui where user_id = (SELECT id FROM %s WHERE username = $1)
 		LIMIT 50
 		OFFSET $2
 		 `, usersInfoTable, usersTable,
 		)
 	} else {
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist, profile_picture
-		from %s order by dist
+		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist, (select username from users where id = ui.user_id) as profile_picture
+		from %s ui order by dist
 		LIMIT 50
 		OFFSET $2
 		 `, usersInfoTable,

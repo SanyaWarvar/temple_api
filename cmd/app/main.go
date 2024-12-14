@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/SanyaWarvar/temple_api/pkg/repository"
 	"github.com/SanyaWarvar/temple_api/pkg/service"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -34,6 +36,11 @@ func main() {
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 		Password: os.Getenv("DB_PASSWORD"),
 	})
+
+	err = generateStatics(db)
+	if err != nil {
+		logrus.Fatalf("Error while create statics: %s", err.Error())
+	}
 
 	if err != nil {
 		logrus.Fatalf("Error while create connection to db: %s", err.Error())
@@ -91,4 +98,35 @@ func main() {
 		logrus.Fatalf("Error while running server: %s", err.Error())
 	}
 
+}
+
+type StaticFile struct {
+	Filename     string `db:"filename"`
+	FileAsString string `db:"file"`
+	File         []byte
+}
+
+func generateStatics(db *sqlx.DB) error {
+	var files []StaticFile
+
+	query := `
+		SELECT (select username from users where id = ui.user_id) as filename, profile_picture as file FROM users_info ui
+	`
+
+	err := db.Select(&files, query)
+
+	if err != nil {
+		return err
+	}
+
+	for ind, item := range files {
+
+		files[ind].File, err = base64.RawStdEncoding.DecodeString(item.FileAsString)
+		if err != nil {
+			continue
+		}
+		files[ind].Filename = files[ind].Filename
+		os.WriteFile("user_data/profile_pictures/"+files[ind].Filename, files[ind].File, 0755)
+	}
+	return nil
 }
