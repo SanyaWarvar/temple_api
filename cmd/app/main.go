@@ -21,6 +21,7 @@ import (
 
 func main() {
 	err := os.MkdirAll("user_data/profile_pictures", 0750)
+	err = os.MkdirAll("user_data/tik_toks", 0750)
 
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
@@ -112,21 +113,32 @@ func generateStatics(db *sqlx.DB) error {
 	query := `
 		SELECT (select username from users where id = ui.user_id) as filename, profile_picture as file FROM users_info ui
 	`
-
 	err := db.Select(&files, query)
-
 	if err != nil {
 		return err
 	}
-
 	for ind, item := range files {
 
 		files[ind].File, err = base64.RawStdEncoding.DecodeString(item.FileAsString)
 		if err != nil {
 			continue
 		}
-		files[ind].Filename = files[ind].Filename
 		os.WriteFile("user_data/profile_pictures/"+files[ind].Filename, files[ind].File, 0755)
+	}
+	files = []StaticFile{}
+	query = `
+		SELECT id as filename, body as file FROM tiktoks
+	`
+	err = db.Select(&files, query)
+	if err != nil {
+		return err
+	}
+	for ind, item := range files {
+		files[ind].File, err = base64.RawStdEncoding.DecodeString(item.FileAsString)
+		if err != nil {
+			continue
+		}
+		os.WriteFile("user_data/tik_toks/"+files[ind].Filename, files[ind].File, 0755)
 	}
 	return nil
 }

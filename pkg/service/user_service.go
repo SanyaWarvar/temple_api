@@ -76,3 +76,7 @@ func (s *UserService) FindUsers(searchString string, page int) ([]repository.Fin
 func (s *UserService) UpdateProfPic(userId uuid.UUID, path string) error {
 	return s.repo.UpdateProfPic(userId, path)
 }
+
+func (s *UserService) GetUserById(userId uuid.UUID) (models.User, error) {
+	return s.repo.GetUserById(userId)
+}

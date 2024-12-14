@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -55,11 +56,14 @@ func (h *Handler) createTiktok(c *gin.Context) {
 	}
 
 	err = h.services.ITiktokService.CreateTiktok(item)
-
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	go func() {
+		os.WriteFile("user_data/tik_toks/"+item.Id.String(), fileBytes, 0644)
+	}()
 
 	c.JSON(http.StatusCreated, map[string]string{"id": item.Id.String()})
 }
@@ -77,7 +81,7 @@ func (h *Handler) getTiktokById(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-
+	item.Body = c.Request.Host + "/tik_toks/" + item.Id.String()
 	c.JSON(http.StatusOK, item)
 }
 

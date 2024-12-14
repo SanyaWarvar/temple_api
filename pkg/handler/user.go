@@ -119,21 +119,26 @@ func (h *Handler) updateProfPic(c *gin.Context) {
 		return
 	}
 	suffix := filepath.Ext(input.ProfilePic.Filename)
-	ValidFileSuffixForProfilePicture := []string{".gif", ".jpg", ".png", ".svg"}
+	ValidFileSuffixForProfilePicture := []string{".gif", ".jpg", ".png"}
 	if !slices.Contains(ValidFileSuffixForProfilePicture, suffix) {
 		newErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("Supported formats: .gif, .jpg, .png, .svg. %s is unsupported!", suffix))
 		return
 	}
 
-	path := base64.RawStdEncoding.EncodeToString(fileBytes)
+	bytes := base64.RawStdEncoding.EncodeToString(fileBytes)
 
-	err = h.services.IUserService.UpdateProfPic(userId, path)
+	err = h.services.IUserService.UpdateProfPic(userId, bytes)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	os.WriteFile(path, fileBytes, 0644)
+	go func() {
+		user, _ := h.services.IUserService.GetUserById(userId)
+
+		err = os.WriteFile("user_data/profile_pictures/"+user.Username, fileBytes, 0644)
+
+	}()
 
 	c.JSON(http.StatusCreated, map[string]string{"details": "success"})
 }
