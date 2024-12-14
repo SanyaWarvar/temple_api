@@ -73,7 +73,7 @@ func (r *UserPostgres) GetUserByEP(email, hashedPassword string) (models.User, e
 
 func (r *UserPostgres) GetUserById(userId uuid.UUID) (models.User, error) {
 	var user models.User
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, usersTable)
+	query := fmt.Sprintf(`SELECT id, username, email, password_hash FROM %s WHERE id = $1`, usersTable)
 	err := r.db.Get(&user, query, userId)
 	return user, err
 }
@@ -96,7 +96,7 @@ func (r *UserPostgres) GetUserInfoById(userId uuid.UUID) (models.UserInfo, error
 
 func (r *UserPostgres) GetUserInfoByU(username string) (models.UserInfo, error) {
 	var userInfo models.UserInfo
-	query := fmt.Sprintf(`SELECT user_id, (select username from users where id = ui.user_id) as profile_picture, first_name, second_name, status, birthday, gender, country, city FROM %s WHERE user_id = (SELECT id FROM %s WHERE username = $1)`, usersInfoTable, usersTable)
+	query := fmt.Sprintf(`SELECT user_id, (select username from users where id = ui.user_id) as profile_picture, first_name, second_name, status, birthday, gender, country, city FROM %s ui WHERE user_id = (SELECT id FROM %s WHERE username = $1)`, usersInfoTable, usersTable)
 	err := r.db.Get(&userInfo, query, username)
 	return userInfo, err
 }
@@ -128,6 +128,7 @@ func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 type FindUserOutput struct {
 	FirstName  string  `json:"first_name" db:"first_name"`
 	SecondName string  `json:"second_name" db:"second_name"`
+	Username   string  `json:"username" db:"username"`
 	ProfilePic string  `json:"profile_picture" db:"profile_picture"`
 	Dist       float64 `json:"-" db:"dist"`
 }
@@ -138,15 +139,16 @@ func (r *UserPostgres) FindUsers(searchString string, page int) ([]FindUserOutpu
 	offset := (page - 1) * 50
 	var query string
 	if strings.HasPrefix(searchString, "@") {
+		searchString = searchString[1:]
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name, (select username from users where id = ui.user_id) as profile_picture FROM %s ui where user_id = (SELECT id FROM %s WHERE username = $1)
+		SELECT first_name, second_name, (select username from users where id = ui.user_id) as profile_picture, (select username from users where id = ui.user_id) FROM %s ui where user_id = (SELECT id FROM %s WHERE username = $1)
 		LIMIT 50
 		OFFSET $2
 		 `, usersInfoTable, usersTable,
 		)
 	} else {
 		query = fmt.Sprintf(`
-		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist, (select username from users where id = ui.user_id) as profile_picture
+		SELECT first_name, second_name, fullname(first_name, second_name) <-> $1 as dist, (select username from users where id = ui.user_id) as profile_picture, (select username from users where id = ui.user_id)
 		from %s ui order by dist
 		LIMIT 50
 		OFFSET $2

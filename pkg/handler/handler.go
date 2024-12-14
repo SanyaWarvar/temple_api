@@ -22,6 +22,7 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	router := gin.New()
 	router.HEAD("/health", h.check_health)
 
+	router.Static("/tik_toks", "./user_data/tik_toks")
 	images := router.Group("/images")
 	{
 		images.Static("/profiles", "./user_data/profile_pictures")
