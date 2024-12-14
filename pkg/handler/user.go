@@ -27,6 +27,16 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		return
 	}
 
+	file, err := os.OpenFile("user_data/profile_pictures/"+*userInfo.ProfilePic, os.O_RDONLY, 0666)
+	if err != nil {
+		temp := c.Request.Host + "/images/base/base_pic.jpg"
+		userInfo.ProfilePic = &temp
+	} else {
+		temp := c.Request.Host + "/images/profiles/" + *userInfo.ProfilePic
+		userInfo.ProfilePic = &temp
+		file.Close()
+	}
+
 	c.JSON(http.StatusOK, userInfo)
 }
 
@@ -71,6 +81,17 @@ func (h *Handler) findUser(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	for ind, item := range users {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePic, os.O_RDONLY, 0666)
+		if err != nil {
+			users[ind].ProfilePic = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			users[ind].ProfilePic = c.Request.Host + "/images/profiles/" + item.ProfilePic
+			file.Close()
+		}
+	}
+
 	c.JSON(http.StatusOK, users)
 }
 
@@ -104,7 +125,6 @@ func (h *Handler) updateProfPic(c *gin.Context) {
 		return
 	}
 
-	
 	path := base64.RawStdEncoding.EncodeToString(fileBytes)
 
 	err = h.services.IUserService.UpdateProfPic(userId, path)
