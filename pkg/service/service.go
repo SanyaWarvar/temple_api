@@ -80,6 +80,8 @@ type IMessagesService interface {
 	ReadMessage(messageId, userId uuid.UUID) error
 	EditMessage(userId uuid.UUID, message models.Message) error
 	DeleteMessage(messageId, userId uuid.UUID) error
+	
+	GetMembersFromChatByID(chatId uuid.UUID) ([]models.User, error)
 }
 
 type ITiktokService interface {

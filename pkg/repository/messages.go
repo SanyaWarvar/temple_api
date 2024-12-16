@@ -263,3 +263,18 @@ func (r *MessagesPostgres) DeleteMessage(messageId, userId uuid.UUID) error {
 	}
 	return err
 }
+
+func (r *MessagesPostgres) GetMembersFromChatByID(chatId uuid.UUID) ([]models.User, error) {
+	var output []models.User
+	query := fmt.Sprintf(
+		`
+		SELECT u.username
+		FROM %s cm 
+		LEFT JOIN %s c on c.id = cm.chat_id
+		LEFT JOIN %s u on u.id = cm.user_id
+		WHERE cm.chat_id = $1
+		`, chatMembersTable, chatsTable, usersTable,
+	)
+	err := r.db.Select(&output, query, chatId)
+	return output, err
+}

@@ -25,7 +25,7 @@ func main() {
 
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
-	if err := godotenv.Load(".env2"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		logrus.Fatalf("Error while load dotenv: %s", err.Error())
 	}
 

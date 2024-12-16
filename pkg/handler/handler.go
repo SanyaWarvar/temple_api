@@ -5,14 +5,16 @@ import (
 
 	"github.com/SanyaWarvar/temple_api/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 type Handler struct {
 	services *service.Service
+	clients  map[string]*websocket.Conn
 }
 
 func NewHandler(services *service.Service) *Handler {
-	return &Handler{services: services}
+	return &Handler{services: services, clients: make(map[string]*websocket.Conn)}
 }
 
 func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
@@ -21,6 +23,8 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	}
 	router := gin.New()
 	router.HEAD("/health", h.check_health)
+
+	router.GET("/ws/:access_token", h.ws)
 
 	router.Static("/tik_toks", "./user_data/tik_toks")
 	images := router.Group("/images")

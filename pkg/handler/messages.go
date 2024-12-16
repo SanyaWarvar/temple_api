@@ -7,6 +7,7 @@ import (
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 type CreateChatInput struct {
@@ -114,6 +115,23 @@ func (h *Handler) NewMessage(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	go func() {
+		author, _ := h.services.IUserService.GetUserById(userId) // ошибки не будет тк userId уже использовался
+		recipientUsername := ""
+		members, err := h.services.IMessagesService.GetMembersFromChatByID(chatId)
+		if err != nil {
+			logrus.Errorf("error while new message notify: %s", err.Error())
+			return
+		}
+		for ind := range members {
+			if members[ind].Username != author.Username {
+				recipientUsername = members[ind].Username
+				break
+			}
+		}
+		h.NewMessageNotify(author.Username, recipientUsername, input.Body)
+	}()
 
 	c.JSON(http.StatusCreated, map[string]string{"message_id": message.Id.String()})
 }
