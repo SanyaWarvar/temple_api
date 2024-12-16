@@ -25,7 +25,7 @@ func main() {
 
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
-	if err := godotenv.Load(".env"); err != nil {
+	if err := godotenv.Load(".env2"); err != nil {
 		logrus.Fatalf("Error while load dotenv: %s", err.Error())
 	}
 
@@ -38,7 +38,7 @@ func main() {
 		Password: os.Getenv("DB_PASSWORD"),
 	})
 
-	err = generateStatics(db)
+	//err = generateStatics(db)
 	if err != nil {
 		logrus.Fatalf("Error while create statics: %s", err.Error())
 	}

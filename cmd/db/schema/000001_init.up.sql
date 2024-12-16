@@ -16,8 +16,8 @@
     CREATE TABLE users_info(
         user_id UUID REFERENCES users(id) PRIMARY KEY,
         profile_picture text DEFAULT 'base_media/base_pic.jpg' NOT NULL,
-        first_name varchar(32) NOT NULL,
-        second_name varchar(32),
+        first_name varchar(32) DEFAULT 'first' NOT NULL,
+        second_name varchar(32) DEFAULT 'second',
         status varchar(32),
         birthday Timestamp,
         gender varchar(16),

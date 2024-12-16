@@ -32,7 +32,7 @@ func (r *TiktokPostgres) GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error
 	var item models.Tiktok
 	query := fmt.Sprintf(
 		`
-		SELECT id, author_id, created_at, title, id as body FROM %s WHERE id = $1
+		SELECT id, (select username from users where id = t.author_id), created_at, title, id as body FROM %s t WHERE id = $1
 		`,
 		tiktoksTable,
 	)
