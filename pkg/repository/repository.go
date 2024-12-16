@@ -61,6 +61,8 @@ type IFriendRepo interface {
 	GetAllFriend(username string, page int) (FriendListOutput, error)
 	GetAllSubs(username string, page int) (SubListOutput, error)
 	GetAllFollows(username string, page int) (FollowListOutput, error)
+
+	CheckFriendStatus(userId1, userId2 uuid.UUID) (FriendStatus, error)
 }
 
 type IUsersPostsRepo interface {

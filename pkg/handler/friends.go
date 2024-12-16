@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/SanyaWarvar/temple_api/pkg/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,6 +30,9 @@ func (h *Handler) inviteFriend(c *gin.Context) {
 		}
 		return
 	}
+
+	go h.PrepareFriendNotify(c, requestOwnerId, toUsername, repository.Follow)
+
 	c.JSON(http.StatusNoContent, nil)
 }
 
@@ -129,5 +133,7 @@ func (h *Handler) confirmFriend(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	go h.PrepareFriendNotify(c, OwnerId, Username, repository.Confirmed)
 	c.JSON(http.StatusNoContent, nil)
 }
