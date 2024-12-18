@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -74,6 +75,16 @@ func (h *Handler) getAllFriends(c *gin.Context) {
 		return
 	}
 
+	for ind, item := range friends.Friends {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		if err != nil {
+			friends.Friends[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			friends.Friends[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			file.Close()
+		}
+	}
+
 	c.JSON(http.StatusOK, friends)
 }
 
@@ -96,6 +107,16 @@ func (h *Handler) getAllSubs(c *gin.Context) {
 		return
 	}
 
+	for ind, item := range subs.Subscribers {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		if err != nil {
+			subs.Subscribers[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			subs.Subscribers[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			file.Close()
+		}
+	}
+
 	c.JSON(http.StatusOK, subs)
 }
 
@@ -116,6 +137,16 @@ func (h *Handler) getAllFollows(c *gin.Context) {
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	for ind, item := range follows.Followings {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		if err != nil {
+			follows.Followings[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			follows.Followings[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			file.Close()
+		}
 	}
 
 	c.JSON(http.StatusOK, follows)
