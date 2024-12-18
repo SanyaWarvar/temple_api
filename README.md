@@ -632,3 +632,48 @@ message:
 |204|Все хорошо|null|
 |400|Некорректные данные|{"message": string}|
 ***
+
+## Notify websocket
+
+Подключение:
+
+GET {{base_url}}/ws/:access_token
+
+По соединение приходят уведомления. Время от времени соединение пингует клиента для проверки не было ли отключения.
+
+Все данные приходящие по вебсокету выглядят так:
+
+{
+"type": string,
+"data": any
+}
+
+Типы уведомления:
+
+**1. type == "new_message"**
+
+Новое сообщение
+
+"data": 
+
+{
+"from_username": string,
+"message": string
+}
+
+**2. type == "friend"**
+
+Оповещение о друзьях
+
+"data": 
+
+{
+"first_name": string,
+"second_name": string,
+"profile_picture": string (url),
+"status": "confirmed" | "follow"
+}
+
+"confirmed" - другой пользователь принял ваше приглашение в друзья.
+
+"follow" - другой пользователь отправил вам приглашение (подписался на вас)
