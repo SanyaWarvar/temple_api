@@ -356,13 +356,10 @@ profile_pic: file
 
 Создает новый пост.
 
-Пост:
+Необходимо передать json формата 
+
 {
-    "id": uuid,
-    "author_id": uuid,
-    "body": string,
-    "last_update": time (rfc3339),
-    "edited": bool
+"body": string
 }
 
 Возвращает:
