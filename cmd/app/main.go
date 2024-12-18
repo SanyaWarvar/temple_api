@@ -116,8 +116,8 @@ func generateStatics(db *sqlx.DB) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Необходимо создать %d файлов\n", len(files))
 	for ind, item := range files {
-
 		files[ind].File, err = base64.RawStdEncoding.DecodeString(item.FileAsString)
 		if err != nil {
 			continue

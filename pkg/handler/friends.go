@@ -76,11 +76,11 @@ func (h *Handler) getAllFriends(c *gin.Context) {
 	}
 
 	for ind, item := range friends.Friends {
-		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.Username, os.O_RDONLY, 0666)
 		if err != nil {
 			friends.Friends[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
 		} else {
-			friends.Friends[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			friends.Friends[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.Username
 			file.Close()
 		}
 	}
@@ -108,11 +108,11 @@ func (h *Handler) getAllSubs(c *gin.Context) {
 	}
 
 	for ind, item := range subs.Subscribers {
-		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.Username, os.O_RDONLY, 0666)
 		if err != nil {
 			subs.Subscribers[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
 		} else {
-			subs.Subscribers[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			subs.Subscribers[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.Username
 			file.Close()
 		}
 	}
@@ -140,11 +140,11 @@ func (h *Handler) getAllFollows(c *gin.Context) {
 	}
 
 	for ind, item := range follows.Followings {
-		file, err := os.OpenFile("user_data/profile_pictures/"+item.ProfilePicUrl, os.O_RDONLY, 0666)
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.Username, os.O_RDONLY, 0666)
 		if err != nil {
 			follows.Followings[ind].ProfilePicUrl = c.Request.Host + "/images/base/base_pic.jpg"
 		} else {
-			follows.Followings[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.ProfilePicUrl
+			follows.Followings[ind].ProfilePicUrl = c.Request.Host + "/images/profiles/" + item.Username
 			file.Close()
 		}
 	}
