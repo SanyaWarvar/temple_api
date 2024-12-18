@@ -36,3 +36,7 @@ func (s *FriendService) GetAllSubs(username string, page int) (repository.SubLis
 func (s *FriendService) GetAllFollows(username string, page int) (repository.FollowListOutput, error) {
 	return s.repo.GetAllFollows(username, page)
 }
+
+func (s *FriendService) CheckFriendStatus(fromId, toId uuid.UUID) (repository.FriendStatus, error) {
+	return s.repo.CheckFriendStatus(fromId, toId)
+}

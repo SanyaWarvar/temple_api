@@ -252,3 +252,29 @@ func (r *FriendPostgres) ConfirmFriend(invitedId uuid.UUID, ownerUsername string
 
 	return err
 }
+
+type FriendStatus string
+
+const (
+	Confirmed FriendStatus = "confirmed"
+	Sub       FriendStatus = "sub"
+	Follow    FriendStatus = "follow"
+)
+
+func (r *FriendPostgres) CheckFriendStatus(fromId, toId uuid.UUID) (FriendStatus, error) {
+	var output FriendStatus
+	var status bool
+	query := fmt.Sprintf(
+		`
+		SELECT confirmed FROM %s WHERE from_user_id = $1 AND to_user_id = $2
+		`, friendsTable,
+	)
+	err := r.db.Get(&status, query, fromId, toId)
+	if err != nil {
+		return output, nil
+	}
+	if status {
+		return Confirmed, nil
+	}
+	return Follow, nil
+}

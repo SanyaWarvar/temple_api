@@ -58,6 +58,8 @@ type IFriendService interface {
 	GetAllFriend(username string, page int) (repository.FriendListOutput, error)
 	GetAllSubs(username string, page int) (repository.SubListOutput, error)
 	GetAllFollows(username string, page int) (repository.FollowListOutput, error)
+
+	CheckFriendStatus(fromId, toId uuid.UUID) (repository.FriendStatus, error)
 }
 
 type IUsersPostsService interface {
@@ -80,6 +82,8 @@ type IMessagesService interface {
 	ReadMessage(messageId, userId uuid.UUID) error
 	EditMessage(userId uuid.UUID, message models.Message) error
 	DeleteMessage(messageId, userId uuid.UUID) error
+
+	GetMembersFromChatByID(chatId uuid.UUID) ([]models.User, error)
 }
 
 type ITiktokService interface {

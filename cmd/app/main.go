@@ -37,15 +37,14 @@ func main() {
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 		Password: os.Getenv("DB_PASSWORD"),
 	})
-
+	if err != nil {
+		logrus.Fatalf("Error while create connection to db: %s", err.Error())
+	}
 	err = generateStatics(db)
 	if err != nil {
 		logrus.Fatalf("Error while create statics: %s", err.Error())
 	}
 
-	if err != nil {
-		logrus.Fatalf("Error while create connection to db: %s", err.Error())
-	}
 	dbNum, err := strconv.Atoi(os.Getenv("CACHE_DB"))
 	if err != nil {
 		logrus.Fatalf("Error while create connection to db: %s", err.Error())

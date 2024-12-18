@@ -61,6 +61,8 @@ type IFriendRepo interface {
 	GetAllFriend(username string, page int) (FriendListOutput, error)
 	GetAllSubs(username string, page int) (SubListOutput, error)
 	GetAllFollows(username string, page int) (FollowListOutput, error)
+
+	CheckFriendStatus(userId1, userId2 uuid.UUID) (FriendStatus, error)
 }
 
 type IUsersPostsRepo interface {
@@ -83,6 +85,8 @@ type IMessagesRepo interface {
 	ReadMessage(messageId, userId uuid.UUID) error
 	EditMessage(userId uuid.UUID, message models.Message) error
 	DeleteMessage(messageId, userId uuid.UUID) error
+
+	GetMembersFromChatByID(chatId uuid.UUID) ([]models.User, error)
 }
 
 type ITiktokRepo interface {

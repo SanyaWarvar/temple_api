@@ -14,30 +14,34 @@ func NewMessagesService(repo repository.IMessagesRepo) *MessagesService {
 	return &MessagesService{repo: repo}
 }
 
-func (r *MessagesService) CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error) {
-	return r.repo.CreateChat(inviteUsername, owner)
+func (s *MessagesService) CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error) {
+	return s.repo.CreateChat(inviteUsername, owner)
 }
 
-func (r *MessagesService) GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error) {
-	return r.repo.GetAllChats(userId, page)
+func (s *MessagesService) GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error) {
+	return s.repo.GetAllChats(userId, page)
 }
 
-func (r *MessagesService) GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error) {
-	return r.repo.GetChat(chatId, userId, page)
+func (s *MessagesService) GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error) {
+	return s.repo.GetChat(chatId, userId, page)
 }
 
-func (r *MessagesService) CreateMessage(data models.Message) error {
-	return r.repo.CreateMessage(data)
+func (s *MessagesService) CreateMessage(data models.Message) error {
+	return s.repo.CreateMessage(data)
 }
 
-func (r *MessagesService) ReadMessage(messageId, userId uuid.UUID) error {
-	return r.repo.ReadMessage(messageId, userId)
+func (s *MessagesService) ReadMessage(messageId, userId uuid.UUID) error {
+	return s.repo.ReadMessage(messageId, userId)
 }
 
-func (r *MessagesService) EditMessage(userId uuid.UUID, message models.Message) error {
-	return r.repo.EditMessage(userId, message)
+func (s *MessagesService) EditMessage(userId uuid.UUID, message models.Message) error {
+	return s.repo.EditMessage(userId, message)
 }
 
-func (r *MessagesService) DeleteMessage(messageId, userId uuid.UUID) error {
-	return r.repo.DeleteMessage(messageId, userId)
+func (s *MessagesService) DeleteMessage(messageId, userId uuid.UUID) error {
+	return s.repo.DeleteMessage(messageId, userId)
+}
+
+func (s *MessagesService) GetMembersFromChatByID(chatId uuid.UUID) ([]models.User, error) {
+	return s.repo.GetMembersFromChatByID(chatId)
 }
