@@ -39,3 +39,4 @@ func (s *UsersPostsService) LikePostById(postId, userId uuid.UUID) error {
 func (s *UsersPostsService) GetFeed(userId uuid.UUID, page int) ([]repository.PostOutput, error) {
 	return s.repo.GetFeed(userId, page)
 }
+

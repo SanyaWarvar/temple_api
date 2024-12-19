@@ -102,3 +102,47 @@ func (h *Handler) deleteTiktokById(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+func (h *Handler) feedTikTok(c *gin.Context) {
+	userId, err := getUserId(c, false)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	var input PageInput
+	err = c.BindJSON(&input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	output, err := h.services.ITiktokService.Feed(userId, input.Page)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	for ind, item := range output {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.AuthorProfilePicture, os.O_RDONLY, 0666)
+		if err != nil {
+			output[ind].AuthorProfilePicture = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			output[ind].AuthorProfilePicture = c.Request.Host + "/images/profiles/" + item.AuthorProfilePicture
+			file.Close()
+		}
+
+		file, err = os.OpenFile("user_data/tik_toks/"+item.Id.String(), os.O_RDONLY, 0666)
+		if err != nil {
+			bytesData, err := base64.RawStdEncoding.DecodeString(item.Body)
+			if err != nil {
+				continue
+			}
+			os.WriteFile("user_data/tik_toks/"+item.Id.String(), bytesData, 0644)
+		} else {
+			output[ind].Body = c.Request.Host + "/tik_toks/" + item.Id.String()
+			file.Close()
+		}
+		output[ind].Body = c.Request.Host + "/tik_toks/" + item.Id.String()
+	}
+
+	c.JSON(http.StatusOK, output)
+}
