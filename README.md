@@ -122,8 +122,6 @@ next_code_time - время, по прошествии которого, мож�
 ***
 **1. GET {{base_url}}/user/:username**
 
-**!этому ендпоинту header с токеном не нужен!**
-
 Возвращает информацию о пользователе. 
 
 Возвращает:
@@ -138,7 +136,8 @@ next_code_time - время, по прошествии которого, мож�
     "birthday": datetime (формат RFC3339) | null,  
     "gender": string | null,
     "country": string | null,
-    "city": string | null
+    "city": string | null,
+    "friend_status": "not friends" | "friends" | "sub" | "follow"
 }.
 
 ***
@@ -447,7 +446,7 @@ page: int
 
 **1. GET {{base_url}}/chats/**
 
-Получить все чаты пользователя (не более 50) и сообщения из каждого чата (по 25 на чат)
+Получить все чаты пользователя (не более 25) и сообщения из каждого чата (по 50 на чат)
 
 Принимает json формата:
 
@@ -459,8 +458,23 @@ page: int
 chat:
 {
     "id": uuid,
-    "members": []string,
-    "messages": []message
+    "with_user": {
+    	"first_name": string,
+     	"second_name": string,
+      	"profile_picture": string(url),
+        "username": string
+    }
+    "messages": {
+	"id": uuid,
+ 	"body": string,
+  	"chat_id": uuid,
+   	"author_first_name": string,
+    	"author_second_name": string,
+    	"author_profile_picture": string(url),
+     	"created_at": time,
+        "readed": bool,
+	"edited": bool
+    }
 }
 
 message:
@@ -522,7 +536,11 @@ message:
 
 Отправить сообщение в чат.
 
-Принимает json message
+Принимает json 
+
+{
+ "body": string
+}
 
 Возвращает:
 
