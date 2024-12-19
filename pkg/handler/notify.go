@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
@@ -32,8 +34,10 @@ func (h *Handler) NewMessageNotify(authorUsername, recipientUsername, message st
 	if !ok {
 		return
 	}
+	data, err := json.Marshal(msg)
+	fmt.Println(err)
 
-	targetConn.WriteJSON(msg)
+	targetConn.WriteMessage(1, data)
 }
 
 type FriendNotify struct {
