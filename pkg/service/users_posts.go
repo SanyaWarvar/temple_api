@@ -35,3 +35,7 @@ func (s *UsersPostsService) GetPostsByU(username string, page int, userId uuid.U
 func (s *UsersPostsService) LikePostById(postId, userId uuid.UUID) error {
 	return s.repo.LikePostById(postId, userId)
 }
+
+func (s *UsersPostsService) GetFeed(userId uuid.UUID, page int) ([]repository.PostOutput, error) {
+	return s.repo.GetFeed(userId, page)
+}

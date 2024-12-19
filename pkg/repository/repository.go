@@ -75,6 +75,8 @@ type IUsersPostsRepo interface {
 	GetPostsByU(username string, page int, userId uuid.UUID) ([]UserPostOutput, error)
 
 	LikePostById(postId, userId uuid.UUID) error
+
+	GetFeed(userId uuid.UUID, page int) ([]PostOutput, error)
 }
 
 type IMessagesRepo interface {

@@ -72,6 +72,8 @@ type IUsersPostsService interface {
 	GetPostsByU(username string, page int, userId uuid.UUID) ([]repository.UserPostOutput, error)
 
 	LikePostById(postId, userId uuid.UUID) error
+
+	GetFeed(userId uuid.UUID, page int) ([]repository.PostOutput, error)
 }
 
 type IMessagesService interface {

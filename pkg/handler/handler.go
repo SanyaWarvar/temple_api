@@ -64,6 +64,7 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 
 	usersPosts := router.Group("/users_posts", h.userIdentity)
 	{
+		usersPosts.GET("/feed", h.feed)
 		usersPosts.GET("/:id", h.getPost)
 		usersPosts.POST("/", h.createPost)
 		usersPosts.DELETE("/:id", h.deletePost)
