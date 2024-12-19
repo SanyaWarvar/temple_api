@@ -191,7 +191,7 @@ func (r *MessagesPostgres) GetChat(chatId, userId uuid.UUID, page int) (AllChats
 	ORDER BY uc.id, mw.created_at
 	limit 100 offset $3`
 
-	rows, err := r.db.Queryx(query, chatId, chatId, offset)
+	rows, err := r.db.Queryx(query, userId, chatId, offset)
 	if err != nil {
 		return AllChatsOutput{}, err
 	}

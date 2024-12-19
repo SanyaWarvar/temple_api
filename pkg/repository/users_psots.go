@@ -130,3 +130,44 @@ func (r *UsersPostsPostgres) LikePostById(postId, userId uuid.UUID) error {
 
 	return err
 }
+
+type PostOutput struct {
+	models.UserPost
+	AuthorUsername   string `json:"author_username" db:"author_username"`
+	AuthorFirstName  string `json:"author_first_name" db:"author_first_name"`
+	AuthorSecondName string `json:"author_second_name" db:"author_second_name"`
+	AuthorProfilePic string `json:"author_profile_picture" db:"author_profile_picture"`
+	LikesCount       int    `json:"likes_count" db:"likes_count"`
+	LikedByMe        bool   `json:"liked_by_me" db:"liked_by_me"`
+}
+
+func (r *UsersPostsPostgres) GetFeed(userId uuid.UUID, page int) ([]PostOutput, error) {
+	offset := (page - 1) * 50
+	var output []PostOutput
+	query := fmt.Sprint(
+		`
+		select 
+		up.*,
+		u.username as author_username,
+		ui.first_name as author_first_name,
+		ui.second_name as author_second_name,
+		ui.profile_picture as author_profile_picture,
+		(select count(*) from users_posts_likes upl 
+		where upl.post_id = up.id
+		) as likes_count,
+		(select count(*) from users_posts_likes upl 
+		where upl.post_id = up.id and upl.user_id = $1
+		) as liked_by_me
+
+		from users_posts up 
+		inner join users u on u.id = up.author_id
+		inner join users_info ui  on ui.user_id = up.author_id 
+		where author_id != $1
+		order by last_update desc
+		limit 50 offset $2
+		`,
+	)
+	err := r.db.Select(&output, query, userId, offset)
+
+	return output, err
+}

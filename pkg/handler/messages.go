@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -48,11 +48,20 @@ func (h *Handler) GetAllChats(c *gin.Context) {
 	}
 
 	userId, _ := getUserId(c, false)
-	fmt.Println(userId)
 	chats, err := h.services.GetAllChats(userId, input.Page)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	for ind, item := range chats {
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.WithUser.ProfilePic, os.O_RDONLY, 0666)
+		if err != nil {
+			chats[ind].WithUser.ProfilePic = c.Request.Host + "/images/base/base_pic.jpg"
+		} else {
+			chats[ind].WithUser.ProfilePic = c.Request.Host + "/images/profiles/" + item.WithUser.ProfilePic
+			file.Close()
+		}
 	}
 
 	c.JSON(http.StatusOK, chats)
@@ -79,6 +88,14 @@ func (h *Handler) GetChat(c *gin.Context) {
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	file, err := os.OpenFile("user_data/profile_pictures/"+data.WithUser.ProfilePic, os.O_RDONLY, 0666)
+	if err != nil {
+		data.WithUser.ProfilePic = c.Request.Host + "/images/base/base_pic.jpg"
+	} else {
+		data.WithUser.ProfilePic = c.Request.Host + "/images/profiles/" + data.WithUser.ProfilePic
+		file.Close()
 	}
 
 	c.JSON(http.StatusOK, data)
