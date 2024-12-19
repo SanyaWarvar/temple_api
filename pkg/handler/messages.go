@@ -68,23 +68,15 @@ func (h *Handler) GetAllChats(c *gin.Context) {
 }
 
 func (h *Handler) GetChat(c *gin.Context) {
-	var input PageInput
 	chat_id_string := c.Param("chat_id")
 	chat_id, err := uuid.Parse(chat_id_string)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	err = c.BindJSON(&input)
-	if input.Page == 0 {
-		input.Page = 1
-	}
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
+
 	userId, _ := getUserId(c, false)
-	data, err := h.services.GetChat(chat_id, userId, input.Page)
+	data, err := h.services.GetChat(chat_id, userId, 1)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

@@ -166,7 +166,7 @@ func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]AllChatsOu
 
 func (r *MessagesPostgres) GetChat(chatId, userId uuid.UUID, page int) (AllChatsOutput, error) {
 	// Определяем смещение для пагинации
-	offset := (page - 1) * 100
+	offset := 0
 
 	query := `
 	SELECT 
@@ -189,7 +189,7 @@ func (r *MessagesPostgres) GetChat(chatId, userId uuid.UUID, page int) (AllChats
 	RIGHT JOIN messages mw ON mw.chat_id = uc.id
 	WHERE cm.user_id != $1 AND uc.id = $2
 	ORDER BY uc.id, mw.created_at
-	limit 100 offset $3`
+	offset $3`
 
 	rows, err := r.db.Queryx(query, userId, chatId, offset)
 	if err != nil {
