@@ -18,11 +18,11 @@ func (s *MessagesService) CreateChat(inviteUsername string, owner uuid.UUID) (uu
 	return s.repo.CreateChat(inviteUsername, owner)
 }
 
-func (s *MessagesService) GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error) {
+func (s *MessagesService) GetAllChats(userId uuid.UUID, page int) ([]repository.AllChatsOutput, error) {
 	return s.repo.GetAllChats(userId, page)
 }
 
-func (s *MessagesService) GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error) {
+func (s *MessagesService) GetChat(chatId, userId uuid.UUID, page int) (repository.AllChatsOutput, error) {
 	return s.repo.GetChat(chatId, userId, page)
 }
 

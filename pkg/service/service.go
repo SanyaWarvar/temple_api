@@ -21,6 +21,7 @@ type IUserService interface {
 	UpdateUserInfo(userInfo models.UserInfo) error
 	FindUsers(searchString string, page int) ([]repository.FindUserOutput, error)
 	UpdateProfPic(userId uuid.UUID, path string) error
+	GetUserInfoByUWithFS(username string, userId uuid.UUID) (repository.UserInfoWithFS, error)
 }
 
 type IEmailSmtpService interface {
@@ -75,8 +76,8 @@ type IUsersPostsService interface {
 
 type IMessagesService interface {
 	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
-	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
-	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+	GetAllChats(userId uuid.UUID, page int) ([]repository.AllChatsOutput, error)
+	GetChat(chatId, userId uuid.UUID, page int) (repository.AllChatsOutput, error)
 
 	CreateMessage(data models.Message) error
 	ReadMessage(messageId, userId uuid.UUID) error

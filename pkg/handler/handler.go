@@ -42,11 +42,11 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 		auth.POST("/refresh_token", h.refreshToken)
 	}
 
-	router.GET("/user/:username", h.getUserInfo)
 	router.GET("/user/find", h.findUser)
 
 	user := router.Group("/user", h.userIdentity)
 	{
+		user.GET("/:username", h.getUserInfo)
 		user.PUT("/", h.updateUserInfo)
 		user.PUT("/profile_pic", h.updateProfPic)   // new
 		user.GET("/follows/:page", h.getAllFollows) // new

@@ -23,6 +23,7 @@ type IUserRepo interface {
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	FindUsers(searchString string, page int) ([]FindUserOutput, error)
 	UpdateProfPic(userId uuid.UUID, path string) error
+	GetUserInfoByUWithFS(username string, userId uuid.UUID) (UserInfoWithFS, error)
 }
 
 type IEmailSmtpRepo interface {
@@ -78,8 +79,8 @@ type IUsersPostsRepo interface {
 
 type IMessagesRepo interface {
 	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
-	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
-	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+	GetAllChats(userId uuid.UUID, page int) ([]AllChatsOutput, error)
+	GetChat(chatId, userId uuid.UUID, page int) (AllChatsOutput, error)
 
 	CreateMessage(data models.Message) error
 	ReadMessage(messageId, userId uuid.UUID) error
