@@ -22,6 +22,10 @@ func (s *TiktokService) GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
 	return s.repo.GetTiktokById(tiktokId)
 }
 
-func (s *TiktokService) DeleteTiktokById(tiktokId, userId uuid.UUID ) error {
+func (s *TiktokService) DeleteTiktokById(tiktokId, userId uuid.UUID) error {
 	return s.repo.DeleteTiktokById(tiktokId, userId)
+}
+
+func (s *TiktokService) Feed(userId uuid.UUID, page int) ([]repository.TikTokOutput, error) {
+	return s.repo.Feed(userId, page)
 }

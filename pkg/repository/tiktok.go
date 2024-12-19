@@ -55,3 +55,35 @@ func (r *TiktokPostgres) DeleteTiktokById(tiktokId, userId uuid.UUID) error {
 	}
 	return err
 }
+
+type TikTokOutput struct {
+	models.Tiktok
+	AuthorFirstName      string `json:"author_first_name" db:"author_first_name"`
+	AuthorSecondName     string `json:"author_second_name" db:"author_second_name"`
+	AuthorProfilePicture string `json:"author_profile_picture" db:"author_profile_picture"`
+}
+
+func (r *TiktokPostgres) Feed(userId uuid.UUID, page int) ([]TikTokOutput, error) {
+	offset := (page - 1) * 50
+	var output []TikTokOutput
+	query := fmt.Sprint(
+		`
+		select 
+		t.*,
+		u.username as username,
+		ui.first_name as author_first_name,
+		ui.second_name as author_second_name,
+		ui.profile_picture as author_profile_picture
+
+		from tiktoks t 
+		inner join users u on u.id = t.author_id
+		inner join users_info ui on ui.user_id = t.author_id 
+		where author_id != $1
+		order by created_at desc
+		limit 50 offset $2
+		`,
+	)
+	err := r.db.Select(&output, query, userId, offset)
+
+	return output, err
+}

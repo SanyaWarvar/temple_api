@@ -91,6 +91,7 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 
 	tiktoks := router.Group("rofls", h.userIdentity)
 	{
+		tiktoks.GET("/feed", h.feedTikTok)
 		tiktoks.POST("/", h.createTiktok)
 		tiktoks.GET("/:id", h.getTiktokById)
 		tiktoks.DELETE("/:id", h.deleteTiktokById)

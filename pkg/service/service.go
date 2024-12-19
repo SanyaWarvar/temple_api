@@ -93,6 +93,7 @@ type ITiktokService interface {
 	CreateTiktok(item models.Tiktok) error
 	GetTiktokById(tiktokId uuid.UUID) (models.Tiktok, error)
 	DeleteTiktokById(tiktokId, userId uuid.UUID) error
+	Feed(userId uuid.UUID, page int) ([]repository.TikTokOutput, error)
 }
 
 type Service struct {
