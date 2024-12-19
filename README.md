@@ -442,6 +442,38 @@ page: int
 |400|Некорректные данные|{"message": string}|
 ***
 
+**7. GET {{base_url}}/users_posts/feed**
+
+Лента постов
+
+Принимает json:
+
+{
+"page": int
+}
+
+Возвращает:
+
+{
+        "id": uuid,
+        "author_id": uuid,
+        "author_username": string
+        "last_update": time
+        "author_first_name": string,
+        "author_second_name": string,
+        "author_profile_picture": string(url),
+	"body": string,
+ 	"edited": bool,
+  	"likes_count": int,
+   	"liked_by_me": bool,
+    }
+
+|Статус код|Причины|Тело ответа|
+|-|--------|------|
+|200|Все хорошо|json выше|
+|400|Некорректные данные|{"message": string}|
+***
+
 ### Chats Group
 
 **1. GET {{base_url}}/chats/**
@@ -645,6 +677,36 @@ message:
 |Статус код|Причины|Тело ответа|
 |-|--------|------|
 |204|Все хорошо|null|
+|400|Некорректные данные|{"message": string}|
+***
+
+**4. GET {{base_url}}/rofls/feed**
+
+Лента рофланычей (короткие видео)
+
+Принимает json:
+
+{
+"page": int
+}
+
+Возвращает массив (не более 50):
+
+{
+        "id": uuid,
+        "author_id": uuid,
+        "author_username": string
+        "created_at": time
+        "title": string,
+        "body": string(url),
+        "author_first_name": string,
+        "author_second_name": string,
+        "author_profile_picture": string(url),
+    }
+
+|Статус код|Причины|Тело ответа|
+|-|--------|------|
+|200|Все хорошо|json выше|
 |400|Некорректные данные|{"message": string}|
 ***
 
