@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/SanyaWarvar/temple_api/pkg/models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 type MessagesPostgres struct {
@@ -47,44 +47,66 @@ func (r *MessagesPostgres) CreateChat(inviteUsername string, owner uuid.UUID) (u
 	return chatId, err
 }
 
-func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error) {
-	// Определяем смещение для пагинации
-	offset := (page - 1) * 25
+type MessageOutput struct {
+	Id               uuid.UUID `json:"id" db:"id"`
+	Body             string    `json:"body" db:"body"`
+	AuthorFirstName  string    `json:"author_first_name" db:"author_first_name"`
+	AuthorSecondName string    `json:"author_second_name" db:"author_second_name"`
+	AuthorProfilePic string    `json:"author_profile_picture" db:"author_profile_picture"`
+	ChatId           uuid.UUID `json:"chat_id" db:"chat_id"`
+	CreatedAt        time.Time `json:"created_at" db:"created_at"`
+	Readed           bool      `json:"readed" db:"readed"`
+	Edited           bool      `json:"edited" db:"edited"`
+}
 
+type WithUserStruct struct {
+	FirstName  string `json:"first_name" db:"first_name"`
+	SecondName string `json:"second_name" db:"second_name"`
+	ProfilePic string `json:"profile_picture" db:"profile_picture"`
+	Username   string `json:"username" db:"username"`
+}
+
+type AllChatsOutput struct {
+	ChatId   uuid.UUID       `json:"chat_id" db:"chat_id"`
+	WithUser WithUserStruct  `json:"with_user" db:"with_user"`
+	Messages []MessageOutput `json:"messages" db:"messages"`
+}
+
+func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]AllChatsOutput, error) {
+	offset := (page - 1) * 25
 	query := `WITH user_chats AS (
-                SELECT c.id AS chat_id
-                FROM chats c
-                JOIN chat_members cm ON c.id = cm.chat_id
-                WHERE cm.user_id = $1
-                GROUP BY c.id
-                LIMIT 25 OFFSET $2
-              )
-              SELECT 
-                uc.chat_id,
-                array_agg(ui.first_name || ' ' || ui.second_name) AS members,
-                m.id AS message_id,
-                m.body AS message_body,
-                m.author_id AS message_author_id,
-                m.chat_id AS message_chat_id,
-                m.created_at AS message_created_at,
-                m.readed AS message_readed,
-                m.edited AS message_edited,
-                m.reply_to AS message_reply_to
-              FROM 
-                user_chats uc
-              LEFT JOIN 
-                chat_members cm ON uc.chat_id = cm.chat_id
-              LEFT JOIN 
-                users u ON cm.user_id = u.id
-              LEFT JOIN 
-                messages m ON uc.chat_id = m.chat_id
-			  INNER JOIN 
-			    users_info ui on ui.user_id = u.id
-              GROUP BY 
-                uc.chat_id, m.id
-              ORDER BY 
-                uc.chat_id, m.created_at
-              LIMIT 50`
+		SELECT c.id AS chat_id
+		FROM chats c
+		JOIN chat_members cm ON c.id = cm.chat_id
+		WHERE cm.user_id = $1
+		LIMIT 25 OFFSET $2
+	),
+	messages_with_row_number AS (
+		SELECT 
+			m.*,
+			ROW_NUMBER() OVER (PARTITION BY m.chat_id ORDER BY m.created_at DESC) AS rn
+		FROM messages m
+	)
+	SELECT 
+		uc.chat_id,
+		(SELECT username FROM users WHERE id = mw.author_id) AS username,
+		(SELECT first_name FROM users_info WHERE user_id = cm.user_id) AS with_user_first_name,
+		(SELECT second_name FROM users_info WHERE user_id = cm.user_id) AS with_user_second_name,
+		(SELECT profile_picture FROM users_info WHERE user_id = cm.user_id) AS with_user_profile_picture,
+		mw.id,
+		mw.body,
+		(SELECT first_name FROM users_info WHERE user_id = mw.author_id) AS message_author_first_name,
+		(SELECT second_name FROM users_info WHERE user_id = mw.author_id) AS message_author_second_name,
+		(SELECT profile_picture FROM users_info WHERE user_id = mw.author_id) AS message_author_profile_picture,
+		mw.created_at AS message_created_at,
+		mw.readed AS message_readed,
+		mw.edited AS message_edited,
+		mw.chat_id
+	FROM user_chats uc
+	RIGHT JOIN chat_members cm ON cm.chat_id = uc.chat_id
+	RIGHT JOIN messages_with_row_number mw ON mw.chat_id = uc.chat_id AND mw.rn <= 50
+	WHERE cm.user_id != $1
+	ORDER BY uc.chat_id, mw.created_at`
 
 	rows, err := r.db.Queryx(query, userId, offset)
 	if err != nil {
@@ -92,34 +114,49 @@ func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]models.Cha
 	}
 	defer rows.Close()
 
-	chatsMap := make(map[uuid.UUID]*models.Chat)
+	chatsMap := make(map[uuid.UUID]*AllChatsOutput)
 
 	for rows.Next() {
 		var chatId uuid.UUID
-		var members []string
-		var message models.Message
+		var withUser WithUserStruct
+		var message MessageOutput
 
-		err := rows.Scan(&chatId, pq.Array(&members), &message.Id, &message.Body, &message.AuthorId, &message.ChatId, &message.CreatedAt, &message.Readed, &message.Edited, &message.ReplyTo)
+		err := rows.Scan(
+			&chatId,
+			&withUser.Username,
+			&withUser.FirstName,
+			&withUser.SecondName,
+			&withUser.ProfilePic,
+			&message.Id,
+			&message.Body,
+			&message.AuthorFirstName,
+			&message.AuthorSecondName,
+			&message.AuthorProfilePic,
+			&message.CreatedAt,
+			&message.Readed,
+			&message.Edited,
+			&message.ChatId,
+		)
 		if err != nil {
 			return nil, err
 		}
 
-		if message.Body == nil {
+		if message.Body == "" {
 			continue
 		}
 
 		if chat, exists := chatsMap[chatId]; exists {
 			chat.Messages = append(chat.Messages, message)
 		} else {
-			chatsMap[chatId] = &models.Chat{
-				Id:       chatId,
-				Members:  members,
-				Messages: []models.Message{message},
+			chatsMap[chatId] = &AllChatsOutput{
+				ChatId:   chatId,
+				WithUser: withUser,
+				Messages: []MessageOutput{message},
 			}
 		}
 	}
 
-	var chats []models.Chat
+	var chats []AllChatsOutput
 	for _, chat := range chatsMap {
 		chats = append(chats, *chat)
 	}
@@ -127,60 +164,73 @@ func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]models.Cha
 	return chats, nil
 }
 
-func (r *MessagesPostgres) GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error) {
+func (r *MessagesPostgres) GetChat(chatId, userId uuid.UUID, page int) (AllChatsOutput, error) {
 	// Определяем смещение для пагинации
 	offset := (page - 1) * 100
 
-	query := `SELECT 
-                c.id AS chat_id,
-                array_agg(ui.first_name || ' ' || ui.second_name) AS members,
-                m.id AS message_id,
-                m.body AS message_body,
-                m.author_id AS message_author_id,
-                m.chat_id AS message_chat_id,
-                m.created_at AS message_created_at,
-                m.readed AS message_readed,
-                m.edited AS message_edited,
-                m.reply_to AS message_reply_to
-              FROM 
-                chats c
-              LEFT JOIN 
-                chat_members cm ON c.id = cm.chat_id
-              LEFT JOIN 
-                users u ON cm.user_id = u.id
-              LEFT JOIN 
-                messages m ON c.id = m.chat_id
-				INNER JOIN 
-			    users_info ui on ui.user_id = u.id
-              WHERE 
-                c.id = $1
-              GROUP BY 
-                c.id, m.id
-              ORDER BY 
-                m.created_at
-              LIMIT 100 OFFSET $2;`
+	query := `
+	SELECT 
+		uc.id,
+		(SELECT username FROM users WHERE id = mw.author_id) AS username,
+		(SELECT first_name FROM users_info WHERE user_id = cm.user_id) AS with_user_first_name,
+		(SELECT second_name FROM users_info WHERE user_id = cm.user_id) AS with_user_second_name,
+		(SELECT profile_picture FROM users_info WHERE user_id = cm.user_id) AS with_user_profile_picture,
+		mw.id,
+		mw.body,
+		(SELECT first_name FROM users_info WHERE user_id = mw.author_id) AS message_author_first_name,
+		(SELECT second_name FROM users_info WHERE user_id = mw.author_id) AS message_author_second_name,
+		(SELECT profile_picture FROM users_info WHERE user_id = mw.author_id) AS message_author_profile_picture,
+		mw.created_at AS message_created_at,
+		mw.readed AS message_readed,
+		mw.edited AS message_edited,
+		mw.chat_id
+	FROM chats uc
+	RIGHT JOIN chat_members cm ON cm.chat_id = uc.id
+	RIGHT JOIN messages mw ON mw.chat_id = uc.id
+	WHERE cm.user_id != $1 AND uc.id = $2
+	ORDER BY uc.id, mw.created_at
+	limit 100 offset $3`
 
-	rows, err := r.db.Queryx(query, chatId, offset)
+	rows, err := r.db.Queryx(query, chatId, chatId, offset)
 	if err != nil {
-		return models.Chat{}, err
+		return AllChatsOutput{}, err
 	}
 	defer rows.Close()
 
-	var chat models.Chat
-	chat.Id = chatId
+	var chat AllChatsOutput
+	var withUser WithUserStruct
+
+	chat.ChatId = chatId
 
 	// Сбор участников и сообщений
 	for rows.Next() {
-		var message models.Message
+		var message MessageOutput
 
-		err := rows.Scan(&chat.Id, pq.Array(&chat.Members), &message.Id, &message.Body, &message.AuthorId, &message.ChatId, &message.CreatedAt, &message.Readed, &message.Edited, &message.ReplyTo)
+		err := rows.Scan(
+			&chatId,
+			&withUser.Username,
+			&withUser.FirstName,
+			&withUser.SecondName,
+			&withUser.ProfilePic,
+			&message.Id,
+			&message.Body,
+			&message.AuthorFirstName,
+			&message.AuthorSecondName,
+			&message.AuthorProfilePic,
+			&message.CreatedAt,
+			&message.Readed,
+			&message.Edited,
+			&message.ChatId,
+		)
 		if err != nil {
-			return models.Chat{}, err
+			return AllChatsOutput{}, err
 		}
 
 		// Добавляем сообщение в чат
 		chat.Messages = append(chat.Messages, message)
 	}
+
+	chat.WithUser = withUser
 
 	return chat, nil
 

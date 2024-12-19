@@ -78,8 +78,8 @@ type IUsersPostsRepo interface {
 
 type IMessagesRepo interface {
 	CreateChat(inviteUsername string, owner uuid.UUID) (uuid.UUID, error)
-	GetAllChats(userId uuid.UUID, page int) ([]models.Chat, error)
-	GetChat(chatId, userId uuid.UUID, page int) (models.Chat, error)
+	GetAllChats(userId uuid.UUID, page int) ([]AllChatsOutput, error)
+	GetChat(chatId, userId uuid.UUID, page int) (AllChatsOutput, error)
 
 	CreateMessage(data models.Message) error
 	ReadMessage(messageId, userId uuid.UUID) error
