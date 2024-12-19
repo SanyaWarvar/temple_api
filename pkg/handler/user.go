@@ -20,8 +20,9 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, "bad username")
 		return
 	}
+	userId, _ := getUserId(c, false)
 
-	userInfo, err := h.services.IUserService.GetUserInfoByU(username)
+	userInfo, err := h.services.IUserService.GetUserInfoByUWithFS(username, userId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

@@ -80,3 +80,7 @@ func (s *UserService) UpdateProfPic(userId uuid.UUID, path string) error {
 func (s *UserService) GetUserById(userId uuid.UUID) (models.User, error) {
 	return s.repo.GetUserById(userId)
 }
+
+func (s *UserService) GetUserInfoByUWithFS(username string, userId uuid.UUID) (repository.UserInfoWithFS, error) {
+	return s.repo.GetUserInfoByUWithFS(username, userId)
+}

@@ -23,6 +23,7 @@ type IUserRepo interface {
 	GetUserInfoByU(username string) (models.UserInfo, error)
 	FindUsers(searchString string, page int) ([]FindUserOutput, error)
 	UpdateProfPic(userId uuid.UUID, path string) error
+	GetUserInfoByUWithFS(username string, userId uuid.UUID) (UserInfoWithFS, error)
 }
 
 type IEmailSmtpRepo interface {

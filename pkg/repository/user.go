@@ -101,6 +101,36 @@ func (r *UserPostgres) GetUserInfoByU(username string) (models.UserInfo, error) 
 	return userInfo, err
 }
 
+type UserInfoWithFS struct {
+	models.UserInfo
+	FriendStatus string `json:"friend_status" db:"friend_status"`
+}
+
+func (r *UserPostgres) GetUserInfoByUWithFS(username string, userId uuid.UUID) (UserInfoWithFS, error) {
+	var userInfo UserInfoWithFS
+	query := fmt.Sprintf(
+		`
+		SELECT 
+		user_id, 
+		(select username from users where id = ui.user_id) as profile_picture, 
+		first_name, second_name, status, birthday, gender, country, city,
+		coalesce((select case 
+			when fi.from_user_id = $1 and fi.confirmed = 't' then 'friends'
+			when fi.from_user_id = $1 and fi.confirmed = 'f' then 'follow'
+			when fi.from_user_id = ui.user_id and fi.confirmed = 'f' then 'sub'
+			else 'not friend'
+		end 
+		from friends_invites fi
+		where (fi.from_user_id = $1 and fi.to_user_id = ui.user_id) 
+		or (fi.to_user_id = $1 and fi.from_user_id = ui.user_id)
+		), 'not friends') as friend_status
+        FROM users_info ui 
+        WHERE ui.user_id = (SELECT id FROM users WHERE username = $2) 
+		`)
+	err := r.db.Get(&userInfo, query, userId, username)
+	return userInfo, err
+}
+
 func (r *UserPostgres) UpdateUserInfo(userInfo models.UserInfo) error {
 	fields := make([]string, 0)
 	values := make([]interface{}, 0)
