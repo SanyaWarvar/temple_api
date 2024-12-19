@@ -50,7 +50,7 @@ func (h *Handler) ws(c *gin.Context) {
 	go func() {
 		for {
 			time.Sleep(30 * time.Second)
-			if err := ws.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+			if err := ws.WriteMessage(websocket.TextMessage, []byte("ping")); err != nil {
 				logrus.Errorf("Error sending ping: %s", err)
 				return
 			}
