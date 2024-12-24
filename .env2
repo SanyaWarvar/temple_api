@@ -1,15 +1,17 @@
-DB_PASSWORD=2UzrtuImkKk5R7vqkdaLUHbUtngyApcR
-DB_USER=temple_db_3a5e_user
-DB_HOST=dpg-ctefsp9u0jms739aqv40-a.frankfurt-postgres.render.com
+DB_PASSWORD=EXbjWumszJFkFvHhWfXxiricyNDpJDSl
+DB_USER=temple_user
+DB_HOST=dpg-ctl43iij1k6c73ctp3lg-a.frankfurt-postgres.render.com
 DB_PORT=5432
 DB_SSLMODE=require
-DB_NAME=temple_db_3a5e
+DB_NAME=temple_db_5i7c
 
 SIGNINGKEY=veryverysecretkeyfortemple
 ACCESSTOKENTTL=24h
 REFRESHTOKENTTL=720h
 
-CACHE_HOST=localhost
+CACHE_HOST=frankfurt-redis.render.com
+CACHE_PASSWORD=XdqlEaSf8Oo5foeYnXMKdalerEmxI1FY
+CACHE_USER=red-cs12l168ii6s73curfm0
 CACHE_PORT=6379
 CACHE_DB=0
 
@@ -17,7 +19,7 @@ OWNER_EMAIL=templeapi88@gmail.com
 OWNER_PASSWORD=yeqn dkik saup dbza
 SMTP_ADDR=smtp.gmail.com:587    
 CODE_LENGHT=6
-CODE_EXP=5m
-MIN_TTL=4m
+CODE_EXP=15m
+MIN_TTL=14m
 
-RELEASEMODE=false
+RELEASEMODE=true
