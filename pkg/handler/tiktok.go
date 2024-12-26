@@ -122,11 +122,11 @@ func (h *Handler) feedTikTok(c *gin.Context) {
 	}
 
 	for ind, item := range output {
-		file, err := os.OpenFile("user_data/profile_pictures/"+item.AuthorProfilePicture, os.O_RDONLY, 0666)
+		file, err := os.OpenFile("user_data/profile_pictures/"+item.AuthorUsername, os.O_RDONLY, 0666)
 		if err != nil {
 			output[ind].AuthorProfilePicture = c.Request.Host + "/images/base/base_pic.jpg"
 		} else {
-			output[ind].AuthorProfilePicture = c.Request.Host + "/images/profiles/" + item.AuthorProfilePicture
+			output[ind].AuthorProfilePicture = c.Request.Host + "/images/profiles/" + item.AuthorUsername
 			file.Close()
 		}
 
