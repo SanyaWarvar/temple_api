@@ -78,12 +78,11 @@ func (r *TiktokPostgres) Feed(userId uuid.UUID, page int) ([]TikTokOutput, error
 		from tiktoks t 
 		inner join users u on u.id = t.author_id
 		inner join users_info ui on ui.user_id = t.author_id 
-		where author_id != $1
 		order by created_at desc
-		limit 50 offset $2
+		limit 50 offset $1
 		`,
 	)
-	err := r.db.Select(&output, query, userId, offset)
+	err := r.db.Select(&output, query, offset)
 
 	return output, err
 }

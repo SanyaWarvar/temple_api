@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -70,6 +71,23 @@ type AllChatsOutput struct {
 	ChatId   uuid.UUID       `json:"chat_id" db:"chat_id"`
 	WithUser WithUserStruct  `json:"with_user" db:"with_user"`
 	Messages []MessageOutput `json:"messages" db:"messages"`
+}
+
+type ByLastMessageDate []AllChatsOutput
+
+func (a ByLastMessageDate) Len() int {
+	return len(a)
+}
+
+func (a ByLastMessageDate) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a ByLastMessageDate) Less(i, j int) bool {
+	lastMessageI := a[i].Messages[len(a[i].Messages)-1].CreatedAt
+	lastMessageJ := a[j].Messages[len(a[j].Messages)-1].CreatedAt
+
+	return lastMessageI.After(lastMessageJ)
 }
 
 func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]AllChatsOutput, error) {
@@ -160,6 +178,8 @@ func (r *MessagesPostgres) GetAllChats(userId uuid.UUID, page int) ([]AllChatsOu
 	for _, chat := range chatsMap {
 		chats = append(chats, *chat)
 	}
+
+	sort.Sort(ByLastMessageDate(chats))
 
 	return chats, nil
 }
