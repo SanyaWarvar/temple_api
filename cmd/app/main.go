@@ -24,8 +24,7 @@ func main() {
 	err = os.MkdirAll("user_data/tik_toks", 0750)
 
 	logrus.SetFormatter(new(logrus.JSONFormatter))
-	fmt.Println(123)
-	if err := godotenv.Load(".env2"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		logrus.Fatalf("Error while load dotenv: %s", err.Error())
 	}
 
@@ -40,7 +39,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Error while create connection to db: %s", err.Error())
 	}
-	//err = generateStatics(db)
+	err = generateStatics(db)
 	if err != nil {
 		logrus.Fatalf("Error while create statics: %s", err.Error())
 	}
