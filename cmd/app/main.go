@@ -50,10 +50,9 @@ func main() {
 		logrus.Fatalf("Error while create connection to db: %s", err.Error())
 	}
 	redisOptions := redis.Options{
-		ClientName: os.Getenv("CACHE_USER"),
-		Addr:       fmt.Sprintf("%s:%s", os.Getenv("CACHE_HOST"), os.Getenv("CACHE_PORT")),
-		Password:   os.Getenv("CACHE_PASSWORD"),
-		DB:         dbNum,
+		Addr:     fmt.Sprintf("%s:%s", os.Getenv("CACHE_HOST"), os.Getenv("CACHE_PORT")),
+		Password: os.Getenv("CACHE_PASSWORD"),
+		DB:       dbNum,
 	}
 	codeExp, err := time.ParseDuration(os.Getenv("CODE_EXP"))
 	if err != nil {

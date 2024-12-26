@@ -162,7 +162,6 @@ func (r *UsersPostsPostgres) GetFeed(userId uuid.UUID, page int) ([]PostOutput, 
 		from users_posts up 
 		inner join users u on u.id = up.author_id
 		inner join users_info ui  on ui.user_id = up.author_id 
-		where author_id != $1
 		order by last_update desc
 		limit 50 offset $2
 		`,
