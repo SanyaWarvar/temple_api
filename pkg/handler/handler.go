@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/SanyaWarvar/temple_api/pkg/service"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -23,6 +24,12 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	}
 	router := gin.New()
 	router.HEAD("/health", h.check_health)
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	config.AllowCredentials = true
 
 	router.GET("/ws/:access_token", h.ws)
 
