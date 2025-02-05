@@ -30,7 +30,8 @@ func (h *Handler) InitRoutes(releaseMode bool) *gin.Engine {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
 	config.AllowCredentials = true
-
+	router.Use(cors.New(config))
+	
 	router.GET("/ws/:access_token", h.ws)
 
 	router.Static("/tik_toks", "./user_data/tik_toks")
